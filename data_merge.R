@@ -2,6 +2,7 @@
 ##Join extracted covar data at pixel level
 
 library(maptools)
+library(splitstackshape)
 
 #Obtain grid data with community level info
 kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/shps/OhFive_wComm/CommunityFactors_Grid.shp")
@@ -46,16 +47,84 @@ names(kfw_grid_slope)[2]="Slope"
 kfw_grid7=merge(kfw_grid6, kfw_grid_slope, by.x="GridID", by.y="Id")
 
 #Temp
-kfw_grid_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
-names(kfw_grid_temp)=gsub("ad","MeanT",names(kfw_grid_temp), fixed=TRUE)
-kfw_grid8=merge(kfw_grid7, kfw_grid_temp, by.x="GridID", by.y="Id")
+air_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
+
+for (i in 2:length(air_temp))
+{
+  splt <- strsplit(colnames(air_temp)[i],"_")
+  splt[[1]][1] <- sub("X","",splt[[1]][1])
+  month = splt[[1]][2]
+  year = splt[[1]][1]
+  dt = paste(year,"-",month,sep="")
+  colnames(air_temp)[i] <- dt
+}
+
+air_temp_ts <- melt(air_temp,id="Id")
+air_temp_ts <- cSplit(air_temp_ts, "variable", "-")
+air_temp_ts_mean <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=mean)
+air_temp_ts_max <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=max)
+air_temp_ts_min <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=min)
+
+air_temp_mean <- reshape(air_temp_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_1")
+air_temp_max <- reshape(air_temp_ts_max, idvar=c("Id"), direction="wide", timevar="variable_1")
+air_temp_min <- reshape(air_temp_ts_min, idvar=c("Id"), direction="wide", timevar="variable_1")
+
+for (i in 2:length(air_temp_mean))
+{
+  colnames(air_temp_mean)[i] <- sub("value.","MeanT_",colnames(air_temp_mean)[i])
+  colnames(air_temp_max)[i] <- sub("value.","MaxT_",colnames(air_temp_max)[i])
+  colnames(air_temp_min)[i] <- sub("value.","MinT_",colnames(air_temp_min)[i])
+}
+
+names(air_temp_mean)=gsub("ad_","",names(air_temp_mean), fixed=TRUE)
+names(air_temp_max)=gsub("ad_","",names(air_temp_max), fixed=TRUE)
+names(air_temp_min)=gsub("ad_","",names(air_temp_min), fixed=TRUE)
+
+kfw_grid8=merge(kfw_grid7, air_temp_mean, by.x="GridID", by.y="Id")
+kfw_grid9=merge(kfw_grid8, air_temp_max, by.x="GridID", by.y="Id")
+kfw_grid10=merge(kfw_grid9, air_temp_min, by.x="GridID", by.y="Id")
 
 #Precip
-kfw_grid_precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
-names(kfw_grid_precip)=gsub("ad","MeanP",names(kfw_grid_precip), fixed=TRUE)
-kfw_grid9=merge(kfw_grid8, kfw_grid_precip, by.x="GridID", by.y="Id")
+precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
 
-#yearly avg for temp and precip
+for (i in 2:length(precip))
+{
+  splt <- strsplit(colnames(precip)[i],"_")
+  splt[[1]][1] <- sub("X","",splt[[1]][1])
+  month = splt[[1]][2]
+  year = splt[[1]][1]
+  dt = paste(year,"-",month,sep="")
+  colnames(precip)[i] <- dt
+}
 
-#write shape poly
+precip_ts <- melt(precip,id="id")
+precip_ts <- cSplit(precip_ts, "variable", "-")
+precip_ts_mean <- aggregate(value ~ variable_1 + id, precip_ts, FUN=mean)
+precip_ts_max <- aggregate(value ~ variable_1 + id, precip_ts, FUN=max)
+precip_ts_min <- aggregate(value ~ variable_1 + id, precip_ts, FUN=min)
+precip_mean <- reshape(precip_ts_mean, idvar=c("id"), direction="wide", timevar="variable_1")
+precip_max <- reshape(precip_ts_max, idvar=c("id"), direction="wide", timevar="variable_1")
+precip_min <- reshape(precip_ts_min, idvar=c("id"), direction="wide", timevar="variable_1")
+
+#Rename vars
+for (i in 2:length(air_temp_mean))
+{
+  colnames(precip_mean)[i] <- sub("value.","MeanP_",colnames(precip_mean)[i])
+  colnames(precip_max)[i] <- sub("value.","MaxP_",colnames(precip_max)[i])
+  colnames(precip_min)[i] <- sub("value.","MinP_",colnames(precip_min)[i])
+}
+
+names(precip_mean)=gsub("ad_","",names(precip_mean), fixed=TRUE)
+names(precip_max)=gsub("ad_","",names(precip_max), fixed=TRUE)
+names(precip_min)=gsub("ad_","",names(precip_min), fixed=TRUE)
+
+#names(kfw_grid_precip)=gsub("ad","MeanP",names(kfw_grid_precip), fixed=TRUE)
+
+kfw_grid11=merge(kfw_grid10, precip_mean, by.x="GridID", by.y="Id")
+kfw_grid12=merge(kfw_grid11, precip_max, by.x="GridID", by.y="Id")
+kfw_grid13=merge(kfw_grid12, precip_min, by.x="GridID", by.y="Id")
+
+## Write Final Shapefile
+
+writePolyShape(kfw_grid13,""/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp"")
 
