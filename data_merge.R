@@ -61,13 +61,13 @@ for (i in 2:length(air_temp))
 
 air_temp_ts <- melt(air_temp,id="Id")
 air_temp_ts <- cSplit(air_temp_ts, "variable", "-")
-air_temp_ts_mean <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=mean)
-air_temp_ts_max <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=max)
-air_temp_ts_min <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=min)
+air_temp_ts_mean <- aggregate(value ~ variable_2 + Id, air_temp_ts, FUN=mean)
+air_temp_ts_max <- aggregate(value ~ variable_2 + Id, air_temp_ts, FUN=max)
+air_temp_ts_min <- aggregate(value ~ variable_2 + Id, air_temp_ts, FUN=min)
 
-air_temp_mean <- reshape(air_temp_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_1")
-air_temp_max <- reshape(air_temp_ts_max, idvar=c("Id"), direction="wide", timevar="variable_1")
-air_temp_min <- reshape(air_temp_ts_min, idvar=c("Id"), direction="wide", timevar="variable_1")
+air_temp_mean <- reshape(air_temp_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_2")
+air_temp_max <- reshape(air_temp_ts_max, idvar=c("Id"), direction="wide", timevar="variable_2")
+air_temp_min <- reshape(air_temp_ts_min, idvar=c("Id"), direction="wide", timevar="variable_2")
 
 for (i in 2:length(air_temp_mean))
 {
@@ -76,9 +76,9 @@ for (i in 2:length(air_temp_mean))
   colnames(air_temp_min)[i] <- sub("value.","MinT_",colnames(air_temp_min)[i])
 }
 
-names(air_temp_mean)=gsub("ad_","",names(air_temp_mean), fixed=TRUE)
-names(air_temp_max)=gsub("ad_","",names(air_temp_max), fixed=TRUE)
-names(air_temp_min)=gsub("ad_","",names(air_temp_min), fixed=TRUE)
+#names(air_temp_mean)=gsub("ad_","",names(air_temp_mean), fixed=TRUE)
+#names(air_temp_max)=gsub("ad_","",names(air_temp_max), fixed=TRUE)
+#names(air_temp_min)=gsub("ad_","",names(air_temp_min), fixed=TRUE)
 
 kfw_grid8=merge(kfw_grid7, air_temp_mean, by.x="GridID", by.y="Id")
 kfw_grid9=merge(kfw_grid8, air_temp_max, by.x="GridID", by.y="Id")
@@ -97,28 +97,26 @@ for (i in 2:length(precip))
   colnames(precip)[i] <- dt
 }
 
-precip_ts <- melt(precip,id="id")
+precip_ts <- melt(precip,id="Id")
 precip_ts <- cSplit(precip_ts, "variable", "-")
-precip_ts_mean <- aggregate(value ~ variable_1 + id, precip_ts, FUN=mean)
-precip_ts_max <- aggregate(value ~ variable_1 + id, precip_ts, FUN=max)
-precip_ts_min <- aggregate(value ~ variable_1 + id, precip_ts, FUN=min)
-precip_mean <- reshape(precip_ts_mean, idvar=c("id"), direction="wide", timevar="variable_1")
-precip_max <- reshape(precip_ts_max, idvar=c("id"), direction="wide", timevar="variable_1")
-precip_min <- reshape(precip_ts_min, idvar=c("id"), direction="wide", timevar="variable_1")
+precip_ts_mean <- aggregate(value ~ variable_2 + Id, precip_ts, FUN=mean)
+precip_ts_max <- aggregate(value ~ variable_2 + Id, precip_ts, FUN=max)
+precip_ts_min <- aggregate(value ~ variable_2 + Id, precip_ts, FUN=min)
+precip_mean <- reshape(precip_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_2")
+precip_max <- reshape(precip_ts_max, idvar=c("Id"), direction="wide", timevar="variable_2")
+precip_min <- reshape(precip_ts_min, idvar=c("Id"), direction="wide", timevar="variable_2")
 
 #Rename vars
-for (i in 2:length(air_temp_mean))
+for (i in 2:length(precip_mean))
 {
   colnames(precip_mean)[i] <- sub("value.","MeanP_",colnames(precip_mean)[i])
   colnames(precip_max)[i] <- sub("value.","MaxP_",colnames(precip_max)[i])
   colnames(precip_min)[i] <- sub("value.","MinP_",colnames(precip_min)[i])
 }
 
-names(precip_mean)=gsub("ad_","",names(precip_mean), fixed=TRUE)
-names(precip_max)=gsub("ad_","",names(precip_max), fixed=TRUE)
-names(precip_min)=gsub("ad_","",names(precip_min), fixed=TRUE)
-
-#names(kfw_grid_precip)=gsub("ad","MeanP",names(kfw_grid_precip), fixed=TRUE)
+#names(precip_mean)=gsub("ad_","",names(precip_mean), fixed=TRUE)
+#names(precip_max)=gsub("ad_","",names(precip_max), fixed=TRUE)
+#names(precip_min)=gsub("ad_","",names(precip_min), fixed=TRUE)
 
 kfw_grid11=merge(kfw_grid10, precip_mean, by.x="GridID", by.y="Id")
 kfw_grid12=merge(kfw_grid11, precip_max, by.x="GridID", by.y="Id")
@@ -126,5 +124,5 @@ kfw_grid13=merge(kfw_grid12, precip_min, by.x="GridID", by.y="Id")
 
 ## Write Final Shapefile
 
-writePolyShape(kfw_grid13,""/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp"")
+writePolyShape(kfw_grid13,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp")
 
