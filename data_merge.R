@@ -7,8 +7,17 @@ library(splitstackshape)
 #Obtain grid data with community level info
 kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/shps/OhFive_wComm/CommunityFactors_Grid.shp")
 
-#Drop Unused Variables at community level (NDVI, temp and precip because we're using at cell level); keep pop, treatment info, and community identifiers
+#Drop Unused Variables at community level (NDVI, temp and precip because we're using at cell level); and pop, treatment info, and community identifiers because they are NA
 kfw_grid@data <- kfw_grid@data[,-(8:744),drop=FALSE]
+
+#Merge back in community-level pop and treatment variables from shapefile used for community-level analysis
+kfw_grid0 = readShapePoly ("/Users/rbtrichler/Documents/AidData/Git Repos/KFW_Amazon/processed_data/kfw_analysis_inputs.shp")
+kfw_grid0@data <- kfw_grid0@data[,-(7:743),drop=FALSE]
+kfw_grid0@data <- kfw_grid0@data[,-(39:70),drop=FALSE]
+names(kfw_grid0)[3]="Pop_1990_test"
+names(kfw_grid0)[4]="Pop_1995_test"
+names(kfw_grid0)[5]="Pop_2000_test"
+kfw_grid00=merge(kfw_grid, kfw_grid0, by.x="Id", by.y="id")
 
 #Merge grid-level covariate files
 #elevation
@@ -122,7 +131,27 @@ kfw_grid11=merge(kfw_grid10, precip_mean, by.x="GridID", by.y="Id")
 kfw_grid12=merge(kfw_grid11, precip_max, by.x="GridID", by.y="Id")
 kfw_grid13=merge(kfw_grid12, precip_min, by.x="GridID", by.y="Id")
 
+## Eliminate non-PPTAL communities
+
+kfw_grid13$NA_check <- 0
+kfw_grid13$NA_check[is.na(kfw_grid13$demend_y)] <- 1
+kfw_grid14 <- kfw_grid13[kfw_grid13$NA_check != 1,]
+kfw_grid13 <- kfw_grid14
+
+## Create pre-trends
+kfw_grid13$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid13,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+
+kfw_grid13$pre_trend_temp_mean <- timeRangeTrend(kfw_grid13,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+kfw_grid13$pre_trend_temp_max <- timeRangeTrend(kfw_grid13,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+kfw_grid13$pre_trend_temp_min <- timeRangeTrend(kfw_grid13,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+
+kfw_grid13$pre_trend_precip_mean <- timeRangeTrend(kfw_grid13,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+kfw_grid13$pre_trend_precip_max <- timeRangeTrend(kfw_grid13,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+kfw_grid13$pre_trend_precip_min <- timeRangeTrend(kfw_grid13,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+
+
 ## Write Final Shapefile
+writePolyShape(kfw_grid13,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_wpretrends.shp")
 
 writePolyShape(kfw_grid13,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp")
 
