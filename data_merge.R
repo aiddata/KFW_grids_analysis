@@ -141,13 +141,13 @@ kfw_grid13 <- kfw_grid14
 ## Create pre-trends
 kfw_grid13$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid13,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
-kfw_grid13$pre_trend_temp_mean <- timeRangeTrend(kfw_grid13,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
-kfw_grid13$pre_trend_temp_max <- timeRangeTrend(kfw_grid13,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
-kfw_grid13$pre_trend_temp_min <- timeRangeTrend(kfw_grid13,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+kfw_grid13$pre_trend_temp_mean <- timeRangeTrend(kfw_grid13,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid13$pre_trend_temp_max <- timeRangeTrend(kfw_grid13,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid13$pre_trend_temp_min <- timeRangeTrend(kfw_grid13,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
-kfw_grid13$pre_trend_precip_mean <- timeRangeTrend(kfw_grid13,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
-kfw_grid13$pre_trend_precip_max <- timeRangeTrend(kfw_grid13,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
-kfw_grid13$pre_trend_precip_min <- timeRangeTrend(kfw_grid13,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"SP_ID")
+kfw_grid13$pre_trend_precip_mean <- timeRangeTrend(kfw_grid13,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid13$pre_trend_precip_max <- timeRangeTrend(kfw_grid13,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid13$pre_trend_precip_min <- timeRangeTrend(kfw_grid13,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
 
 ## Write Final Shapefile
