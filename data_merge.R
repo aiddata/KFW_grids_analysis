@@ -2,7 +2,9 @@
 ##Join extracted covar data at pixel level
 
 library(maptools)
+library(reshape)
 library(splitstackshape)
+library(ggplot2)
 
 #Obtain grid data with community level info
 kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/shps/OhFive_wComm/CommunityFactors_Grid.shp")
@@ -11,13 +13,13 @@ kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gr
 kfw_grid@data <- kfw_grid@data[,-(8:744),drop=FALSE]
 
 #Merge back in community-level pop and treatment variables from shapefile used for community-level analysis
-kfw_grid0 = readShapePoly ("/Users/rbtrichler/Documents/AidData/Git Repos/KFW_Amazon/processed_data/kfw_analysis_inputs.shp")
-kfw_grid0@data <- kfw_grid0@data[,-(7:743),drop=FALSE]
-kfw_grid0@data <- kfw_grid0@data[,-(39:70),drop=FALSE]
-names(kfw_grid0)[3]="Pop_1990_test"
-names(kfw_grid0)[4]="Pop_1995_test"
-names(kfw_grid0)[5]="Pop_2000_test"
-kfw_grid00=merge(kfw_grid, kfw_grid0, by.x="Id", by.y="id")
+# kfw_grid0 = readShapePoly ("/Users/rbtrichler/Documents/AidData/Git Repos/KFW_Amazon/processed_data/kfw_analysis_inputs.shp")
+# kfw_grid0@data <- kfw_grid0@data[,-(7:743),drop=FALSE]
+# kfw_grid0@data <- kfw_grid0@data[,-(39:70),drop=FALSE]
+# names(kfw_grid0)[3]="Pop_1990_test"
+# names(kfw_grid0)[4]="Pop_1995_test"
+# names(kfw_grid0)[5]="Pop_2000_test"
+# kfw_grid00=merge(kfw_grid, kfw_grid0, by.x="Id", by.y="id")
 
 #Merge grid-level covariate files
 #elevation
@@ -58,25 +60,26 @@ kfw_grid7=merge(kfw_grid6, kfw_grid_slope, by.x="GridID", by.y="Id")
 #Temp
 air_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
 
+
+
 for (i in 2:length(air_temp))
 {
   splt <- strsplit(colnames(air_temp)[i],"_")
-  splt[[1]][1] <- sub("X","",splt[[1]][1])
-  month = splt[[1]][2]
-  year = splt[[1]][1]
+  month = splt[[1]][3]
+  year = splt[[1]][2]
   dt = paste(year,"-",month,sep="")
   colnames(air_temp)[i] <- dt
 }
 
 air_temp_ts <- melt(air_temp,id="Id")
 air_temp_ts <- cSplit(air_temp_ts, "variable", "-")
-air_temp_ts_mean <- aggregate(value ~ variable_2 + Id, air_temp_ts, FUN=mean)
-air_temp_ts_max <- aggregate(value ~ variable_2 + Id, air_temp_ts, FUN=max)
-air_temp_ts_min <- aggregate(value ~ variable_2 + Id, air_temp_ts, FUN=min)
+air_temp_ts_mean <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=mean)
+air_temp_ts_max <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=max)
+air_temp_ts_min <- aggregate(value ~ variable_1 + Id, air_temp_ts, FUN=min)
 
-air_temp_mean <- reshape(air_temp_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_2")
-air_temp_max <- reshape(air_temp_ts_max, idvar=c("Id"), direction="wide", timevar="variable_2")
-air_temp_min <- reshape(air_temp_ts_min, idvar=c("Id"), direction="wide", timevar="variable_2")
+air_temp_mean <- reshape(air_temp_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_1")
+air_temp_max <- reshape(air_temp_ts_max, idvar=c("Id"), direction="wide", timevar="variable_1")
+air_temp_min <- reshape(air_temp_ts_min, idvar=c("Id"), direction="wide", timevar="variable_1")
 
 for (i in 2:length(air_temp_mean))
 {
