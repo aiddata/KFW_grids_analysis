@@ -187,28 +187,26 @@ kfw_grid20=merge(kfw_grid20, kfw_grid_rail, by.x="GridId", by.y="Id")
 
 ## Eliminate non-PPTAL communities
 
-kfw_grid13$NA_check <- 0
-kfw_grid13$NA_check[is.na(kfw_grid13$demend_y)] <- 1
-kfw_grid14 <- kfw_grid13[kfw_grid13$NA_check != 1,]
-kfw_grid13 <- kfw_grid14
+kfw_grid20$NA_check <- 0
+kfw_grid20$NA_check[is.na(kfw_grid13$demend_y)] <- 1
+kfw_grid21 <- kfw_grid13[kfw_grid13$NA_check != 1,]
+kfw_grid20 <- kfw_grid21
+
+#Write Shapefile, without pre-trends
+writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp")
 
 ## Create pre-trends
-kfw_grid13$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid13,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid20,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
-kfw_grid13$pre_trend_temp_mean <- timeRangeTrend(kfw_grid13,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid13$pre_trend_temp_max <- timeRangeTrend(kfw_grid13,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid13$pre_trend_temp_min <- timeRangeTrend(kfw_grid13,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_temp_mean <- timeRangeTrend(kfw_grid20,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_temp_max <- timeRangeTrend(kfw_grid20,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_temp_min <- timeRangeTrend(kfw_grid20,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
-kfw_grid13$pre_trend_precip_mean <- timeRangeTrend(kfw_grid13,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid13$pre_trend_precip_max <- timeRangeTrend(kfw_grid13,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid13$pre_trend_precip_min <- timeRangeTrend(kfw_grid13,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_precip_mean <- timeRangeTrend(kfw_grid20,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_precip_max <- timeRangeTrend(kfw_grid20,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pre_trend_precip_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
+## Write Final Shapefile, with pre-trends
+writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_wpretrends.shp")
 
-
-
-
-## Write Final Shapefile
-writePolyShape(kfw_grid13,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_wpretrends.shp")
-
-writePolyShape(kfw_grid13,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp")
 
