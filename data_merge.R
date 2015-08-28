@@ -6,6 +6,14 @@ library(reshape)
 library(splitstackshape)
 library(ggplot2)
 
+library(devtools)
+devtools::install_github("itpir/SCI@master")
+library(SCI)
+library(stargazer)
+library(lmtest)
+library(multiwayvcov)
+loadLibs()
+
 #Obtain grid data with community level info
 kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/shps/OhFive_wComm/CommunityFactors_Grid.shp")
 
@@ -60,8 +68,6 @@ kfw_grid7=merge(kfw_grid6, kfw_grid_slope, by.x="GridID", by.y="Id")
 #Temp
 air_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
 
-
-
 for (i in 2:length(air_temp))
 {
   splt <- strsplit(colnames(air_temp)[i],"_")
@@ -97,26 +103,30 @@ kfw_grid9=merge(kfw_grid8, air_temp_max, by.x="GridID", by.y="Id")
 kfw_grid10=merge(kfw_grid9, air_temp_min, by.x="GridID", by.y="Id")
 
 #Precip
-precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
+precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_precipitation/extract_merge.csv")
+
+# splt splits columns when it sees _, e.g. ad_1982_02 yields 3 columns, "ad", "1982", "02" 
+# month defines that the first row, represented as [[1]], and the 3rd column, [3], is the month
+# year defines that the first row, [[1]], and the 2nd column, [2], is the year
+# dt then renames the variable year-month, so 1982-02, rather than ad_1982_02
 
 for (i in 2:length(precip))
 {
   splt <- strsplit(colnames(precip)[i],"_")
-  splt[[1]][1] <- sub("X","",splt[[1]][1])
-  month = splt[[1]][2]
-  year = splt[[1]][1]
+  month = splt[[1]][3]
+  year = splt[[1]][2]
   dt = paste(year,"-",month,sep="")
   colnames(precip)[i] <- dt
 }
 
 precip_ts <- melt(precip,id="Id")
 precip_ts <- cSplit(precip_ts, "variable", "-")
-precip_ts_mean <- aggregate(value ~ variable_2 + Id, precip_ts, FUN=mean)
-precip_ts_max <- aggregate(value ~ variable_2 + Id, precip_ts, FUN=max)
-precip_ts_min <- aggregate(value ~ variable_2 + Id, precip_ts, FUN=min)
-precip_mean <- reshape(precip_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_2")
-precip_max <- reshape(precip_ts_max, idvar=c("Id"), direction="wide", timevar="variable_2")
-precip_min <- reshape(precip_ts_min, idvar=c("Id"), direction="wide", timevar="variable_2")
+precip_ts_mean <- aggregate(value ~ variable_1 + Id, precip_ts, FUN=mean)
+precip_ts_max <- aggregate(value ~ variable_1 + Id, precip_ts, FUN=max)
+precip_ts_min <- aggregate(value ~ variable_1 + Id, precip_ts, FUN=min)
+precip_mean <- reshape(precip_ts_mean, idvar=c("Id"), direction="wide", timevar="variable_1")
+precip_max <- reshape(precip_ts_max, idvar=c("Id"), direction="wide", timevar="variable_1")
+precip_min <- reshape(precip_ts_min, idvar=c("Id"), direction="wide", timevar="variable_1")
 
 #Rename vars
 for (i in 2:length(precip_mean))
