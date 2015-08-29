@@ -154,10 +154,10 @@ kfw_grid14=merge(kfw_grid13, kfw_grid_veg, by.x="Id", by.y="id")
 ## Merge in high pressure covars (from Ash) at the community level: Crop Value and Yield
 
 kfw_grid_crop=readShapePoly("/Users/rbtrichler/Google Drive/REU/KfW/Inputs/HighPressureCovars_CropYield/Indig_ag.shp")
-kfw_grid_crop<-kfw_grid_crop[,-(1:13),drop=FALSE]
-kfw_grid_crop<-kfw_grid_crop[,-(2:21),drop=FALSE]
-kfw_grid_crop<-kfw_grid_crop[,-(183:184),drop=FALSE]
-kfw_grid15=merge(kfw_grid14, kfw_grid_crop, by.x="Id", by.y="id")
+kfw_grid_crop@data<-kfw_grid_crop@data[,-(1:13),drop=FALSE]
+kfw_grid_crop@data<-kfw_grid_crop@data[,-(2:21),drop=FALSE]
+kfw_grid_crop@data<-kfw_grid_crop@data[,-(183:184),drop=FALSE]
+kfw_grid15=merge(kfw_grid14, kfw_grid_crop@data, by.x="Id", by.y="id")
 
 ## Merge in high pressure covars (from Ash) at the GRID level: Distance to conservation units, mining, logging, railways
 #Distance to Federal Conservation Unit
@@ -168,28 +168,28 @@ kfw_grid16=merge(kfw_grid15, kfw_grid_fedcons, by.x="GridID", by.y="Id")
 #Distance to State Conservation Unit
 kfw_grid_stcons<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_conservation_state_units/dfcs_e.csv")
 names(kfw_grid_stcons)[2]="stcon_dist"
-kfw_grid17=merge(kfw_grid16, kfw_grid_stcons, by.x="GridId", by.y="Id")
+kfw_grid17=merge(kfw_grid16, kfw_grid_stcons, by.x="GridID", by.y="Id")
 
 #Distance to Logging Center
 kfw_grid_log<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_logging_center/dflc_e.csv")
 names(kfw_grid_log)[2]="log_dist"
-kfw_grid18=merge(kfw_grid17, kfw_grid_log, by.x="GridId", by.y="Id")
+kfw_grid18=merge(kfw_grid17, kfw_grid_log, by.x="GridID", by.y="Id")
 
 #Distance to Mining Activity
 kfw_grid_mine<- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_mining_interests/dfmi_e.csv")
 names(kfw_grid_mine)[2]="mine_dist"
-kfw_grid19=merge(kfw_grid18, kfw_grid_mine, by.x="GridId", by.y="Id")
+kfw_grid19=merge(kfw_grid18, kfw_grid_mine, by.x="GridID", by.y="Id")
 
 #Distance to Railway
 kfw_grid_rail<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_railways/dfrw_e.csv")
 names(kfw_grid_rail)[2]="rail_dist"
-kfw_grid20=merge(kfw_grid20, kfw_grid_rail, by.x="GridId", by.y="Id")
+kfw_grid20=merge(kfw_grid19, kfw_grid_rail, by.x="GridID", by.y="Id")
 
 ## Eliminate non-PPTAL communities
 
 kfw_grid20$NA_check <- 0
-kfw_grid20$NA_check[is.na(kfw_grid13$demend_y)] <- 1
-kfw_grid21 <- kfw_grid13[kfw_grid13$NA_check != 1,]
+kfw_grid20$NA_check[is.na(kfw_grid20$demend_y)] <- 1
+kfw_grid21 <- kfw_grid20[kfw_grid20$NA_check != 1,]
 kfw_grid20 <- kfw_grid21
 
 #Write Shapefile, without pre-trends
