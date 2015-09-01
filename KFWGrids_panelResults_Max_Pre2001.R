@@ -131,6 +131,15 @@ psm_Long$Year <- as.numeric(psm_Long$Year)
 
 write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
+
+psm_Long_HP <- BuildTimeSeries(dta=psm_Pairs,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
+                            interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_","MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist", "reu_id", "Id" ))
+psm_Long_HP$Year <- as.numeric(psm_Long_HP$Year)
+
+write.csv(psm_Long_HP,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_HP.csv")
+
+
+
 dta_Shp_id <-subset(dta_Shp, select=c(GridID, reu_id, Id))
 psm_Long_reuid=merge(dta_Shp_id@data, psm_Long, by.x="GridID", by.y="GridID")
 psm_Long <- psm_Long_reuid
@@ -150,16 +159,29 @@ pModelMax_D_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE,
 #------------------------------------------------------------------------
 #Creating predicted high pressure regions
 
-#HPModel <-  "MaxL ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + Slope + Elevation + MaxL_1995 + Riv_Dist + Road_dist +
-pre_trend_precip_mean + pre_trend_precip_max"
+#Subsetting data to create data frame with observations that have negative pre_trend_NDVI_max
+dta_Shp2 <- dta_Shp
+dta_Shp3=dta_Shp2[dta_Shp2$pre_trend_NDVI_max<0,]
+#Creating binary measure where negative pre_trend_NDVI_max is negative (to reflect deforestation)
+dta_Shp2$BinNDVI=0
+dta_Shp2$BinNDVI[dta_Shp2$pre_trend_NDVI_max<0]=1
 
-summary(HPModel <- lm(MaxL_1995 ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-                        pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + Slope + Elevation + MaxL_1995 + Riv_Dist + Road_dist +
-                        pre_trend_precip_mean + pre_trend_precip_max, data=dta_Shp@data))
+dta = dta_Shp2@data
 
-#HPModel <- SCI::SpatialCausalPSM(dta_Shp,mtd="lm",psmModel,drop="support",visual=FALSE)
+#logit with 
+HPModel = logit(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+             pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+             Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp2@data)
 
+HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp2@data)
+
+
+HPModel$Id <- cluster.vcov(HPModel,c(dta$Id))
+CMREG <- coeftest(HPModel, HPModel$Id)
+print(CMREG)
+summary(HPModel)
 
 
 View(psm_Long$MaxL)
