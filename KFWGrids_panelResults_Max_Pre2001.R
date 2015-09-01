@@ -131,16 +131,37 @@ psm_Long$Year <- as.numeric(psm_Long$Year)
 
 write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
+dta_Shp_id <-subset(dta_Shp, select=c(GridID, reu_id, Id))
+psm_Long_reuid=merge(dta_Shp_id@data, psm_Long, by.x="GridID", by.y="GridID")
+psm_Long <- psm_Long_reuid
+
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ TrtMnt_regend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
-pModelMax_C <- "MaxL_ ~ TrtMnt_regend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) + Year"
+pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
+pModelMax_C <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) + Year"
+pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + Road_dist + Road_dist*TrtMnt_demend_y + factor(reu_id) + Year"
 
 pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_D_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
 
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
+#Creating predicted high pressure regions
+
+#HPModel <-  "MaxL ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + Slope + Elevation + MaxL_1995 + Riv_Dist + Road_dist +
+pre_trend_precip_mean + pre_trend_precip_max"
+
+summary(HPModel <- lm(MaxL_1995 ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+                        pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + Slope + Elevation + MaxL_1995 + Riv_Dist + Road_dist +
+                        pre_trend_precip_mean + pre_trend_precip_max, data=dta_Shp@data))
+
+#HPModel <- SCI::SpatialCausalPSM(dta_Shp,mtd="lm",psmModel,drop="support",visual=FALSE)
+
+
+
 View(psm_Long$MaxL)
 temp_TS_median <- fivenum(psm_Long$MaxL[1041:1120])[3]
 high_pressure_regions_1995 <- ifelse(psm_Long$MaxL[1041:1120] > temp_TS_median, 1, 0)
