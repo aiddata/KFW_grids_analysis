@@ -133,7 +133,7 @@ write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gri
 
 
 psm_Long_HP <- BuildTimeSeries(dta=psm_Pairs,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
-                            interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_","MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist", "reu_id", "Id" ))
+                               interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_","MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist", "reu_id", "Id" ))
 psm_Long_HP$Year <- as.numeric(psm_Long_HP$Year)
 
 write.csv(psm_Long_HP,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_HP.csv")
@@ -144,20 +144,40 @@ dta_Shp_id <-subset(dta_Shp, select=c(GridID, reu_id, Id))
 psm_Long_reuid=merge(dta_Shp_id@data, psm_Long, by.x="GridID", by.y="GridID")
 psm_Long <- psm_Long_reuid
 
+dta_Shp_pre <-subset(dta_Shp, select=c(GridID, pre_trend_NDVI_max, pre_trend_temp_mean, pre_trend_precip_mean))
+psm_Long_pre=merge(dta_Shp_pre@data, psm_Long_HP, by.x="GridID", by.y="GridID")
+psm_Long <- psm_Long_pre
+
+psm_Long$pre_trend_NDVI_cat=0
+psm_Long$pre_trend_NDVI_cat[psm_Long$pre_trend_NDVI_max<=30.39]=1
+
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
 pModelMax_C <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) + Year"
-pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + Road_dist + Road_dist*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
 
 pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_D_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_D_fit <- Stage2PSM(pModelMax_D ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
 #Creating predicted high pressure regions
+
+
+#**Note pre_trend_NDVI_max works from NDVI values that are 10,000 times the actual values, so slope is inflated as well
+
+#Creating climate averages for 1982-1995
+
+dta_Shp2$MeanT_82_95 <- timeRangeAvg(dta_Shp2@data, "MeanT_",1982,1995)
+dta_Shp2$MinT_82_95 <- timeRangeAvg(dta_Shp2@data, "MinT_",1982,1995)
+dta_Shp2$MaxT_82_95 <- timeRangeAvg(dta_Shp2@data, "MaxT_",1982,1995)
+dta_Shp2$MeanP_82_95 <- timeRangeAvg(dta_Shp2@data, "MeanP_",1982,1995)
+dta_Shp2$MinP_82_95 <- timeRangeAvg(dta_Shp2@data, "MinP_",1982,1995)
+dta_Shp2$MaxP_82_95 <- timeRangeAvg(dta_Shp2@data, "MaxP_",1982,1995)
+
 
 #Subsetting data to create data frame with observations that have negative pre_trend_NDVI_max
 dta_Shp2 <- dta_Shp
@@ -168,21 +188,59 @@ dta_Shp2$BinNDVI[dta_Shp2$pre_trend_NDVI_max<0]=1
 
 dta = dta_Shp2@data
 
-#logit with 
+#logit with binary where projects with neg pre-trends=1, all else=0
 HPModel = logit(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-             pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-             Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp2@data)
-
+                  pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+                  Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp2@data)
+#lm with only grid cells that have neg pre-trends, only 375 obs
 HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp2@data)
+#lm with all grid cells, i.e. pos and neg pre-trends
+HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp2@data)
+#lm with all grid cells, i.e. pos and neg pre-trends, and all covars from any time period
+HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
+               mine_dist + fedcon_dis + stcon_dist + rail_dist, data=dta_Shp3@data)
+HPModel = glm(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
+                mine_dist + fedcon_dis + stcon_dist + rail_dist, family=binomial(logit), data=dta_Shp2@data)
+HPModel = glm(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
+                mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
+                cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
+                soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
+                suy1992 + suy1991 + wv1995 + wv1994, family=binomial(logit), data=dta_Shp2@data)
+HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
+               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
+               mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
+               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
+               soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
+               suy1992 + suy1991 + wv1995 + wv1994 , data=dta_Shp2@data)
+HPModel = lm(pre_trend_NDVI_max ~ Pop_1990 + Pop_1995 + MeanT_82_95 + MinT_82_95 + 
+               MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
+               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
+               mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
+               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
+               soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
+               suy1992 + suy1991 + wv1995 + wv1994 , data=dta_Shp2@data)
 
 
+#Running the model with cmreg
 HPModel$Id <- cluster.vcov(HPModel,c(dta$Id))
 CMREG <- coeftest(HPModel, HPModel$Id)
 print(CMREG)
 summary(HPModel)
+summary(HPModel)$r.squared
 
+
+### -------------------
 
 View(psm_Long$MaxL)
 temp_TS_median <- fivenum(psm_Long$MaxL[1041:1120])[3]
