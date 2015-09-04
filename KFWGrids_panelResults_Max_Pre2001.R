@@ -84,9 +84,9 @@ View(trttable)
 varList = c("MaxL_")
 psm_Long <- BuildTimeSeries(dta=psm_Pairs,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
                             interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_","MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist","pre_trend_NDVI_max", "reu_id", "Id" ))
-psm_Long_HP$Year <- as.numeric(psm_Long_HP$Year)
+psm_Long$Year <- as.numeric(psm_Long_HP$Year)
 
-write.csv(psm_Long_HP,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
