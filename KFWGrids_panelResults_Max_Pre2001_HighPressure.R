@@ -164,7 +164,7 @@ pModelMax_D_fit <- Stage2PSM(pModelMax_D ,psm_Long,type="cmreg", table_out=TRUE,
 
 #------------------------------------------------------------------------
 #------------------------------------------------------------------------
-#Creating predicted high pressure regions
+## Creating predicted high pressure regions
 
 
 #**Note pre_trend_NDVI_max works from NDVI values that are 10,000 times the actual values, so slope is inflated as well
@@ -178,6 +178,8 @@ dta_Shp2$MeanP_82_95 <- timeRangeAvg(dta_Shp2@data, "MeanP_",1982,1995)
 dta_Shp2$MinP_82_95 <- timeRangeAvg(dta_Shp2@data, "MinP_",1982,1995)
 dta_Shp2$MaxP_82_95 <- timeRangeAvg(dta_Shp2@data, "MaxP_",1982,1995)
 
+#Creating var for level change in NDVI, 1995-1982
+dta_Shp2$MaxL_levchange_95_82 <- dta_Shp2$MaxL_1995 - dta_Shp2$MaxL_1982
 
 #Subsetting data to create data frame with observations that have negative pre_trend_NDVI_max
 dta_Shp2 <- dta_Shp
@@ -227,9 +229,15 @@ HPModel = lm(pre_trend_NDVI_max ~ Pop_1990 + Pop_1995 + MeanT_82_95 + MinT_82_95
                MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
                mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
-               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
-               soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
-               suy1992 + suy1991 + wv1995 + wv1994 , data=dta_Shp2@data)
+               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
+               suy1992 + suy1991, data=dta_Shp2@data)
+HPModel = lm(MaxL_levchange_95_82 ~ Pop_1990 + Pop_1995 + MeanT_82_95 + MinT_82_95 + 
+               MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
+               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
+               mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
+               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + suv1995 + 
+               suv1994 + suy1995 + suy1994 + suy1993 +
+               suy1992 + suy1991, data=dta_Shp2@data)
 
 
 #Running the model with cmreg
@@ -239,6 +247,60 @@ print(CMREG)
 summary(HPModel)
 summary(HPModel)$r.squared
 
+# Creating predicted NDVI values to interact with TrtBin
+
+dta_Shp2@data$model_int_early_1 <- CMREG[1]
+dta_Shp2@data$model_int_early_2 <- CMREG[2] * dta_Shp2@data$Pop_1990
+dta_Shp2@data$model_int_early_3 <- CMREG[3] * dta_Shp2@data$Pop_1995
+dta_Shp2@data$model_int_early_4 <- CMREG[4] * dta_Shp2@data$MeanT_82_95
+dta_Shp2@data$model_int_early_5 <- CMREG[5] * dta_Shp2@data$MinT_82_95
+dta_Shp2@data$model_int_early_6 <- CMREG[6] * dta_Shp2@data$MaxT_82_95
+dta_Shp2@data$model_int_early_7 <- CMREG[7] * dta_Shp2@data$MinP_82_95
+dta_Shp2@data$model_int_early_8 <- CMREG[8] * dta_Shp2@data$MeanP_82_95
+dta_Shp2@data$model_int_early_9 <- CMREG[9] * dta_Shp2@data$MaxP_82_95
+dta_Shp2@data$model_int_early_10 <- CMREG[10] * dta_Shp2@data$Slope
+dta_Shp2@data$model_int_early_11 <- CMREG[11] * dta_Shp2@data$Elevation
+dta_Shp2@data$model_int_early_12 <- CMREG[12] * dta_Shp2@data$Riv_Dist
+dta_Shp2@data$model_int_early_13 <- CMREG[13] * dta_Shp2@data$ntl_1992
+dta_Shp2@data$model_int_early_14 <- CMREG[14] * dta_Shp2@data$ntl_1993
+dta_Shp2@data$model_int_early_15 <- CMREG[15] * dta_Shp2@data$ntl_1994
+dta_Shp2@data$model_int_early_16 <- CMREG[16] * dta_Shp2@data$ntl_1995
+dta_Shp2@data$model_int_early_17 <- CMREG[17] * dta_Shp2@data$urbtravtim
+dta_Shp2@data$model_int_early_18 <- CMREG[18] * dta_Shp2@data$Road_dist
+dta_Shp2@data$model_int_early_19 <- CMREG[19] * dta_Shp2@data$log_dist
+dta_Shp2@data$model_int_early_20 <- CMREG[20] * dta_Shp2@data$mine_dist
+dta_Shp2@data$model_int_early_21 <- CMREG[21] * dta_Shp2@data$fedcon_dis
+dta_Shp2@data$model_int_early_22 <- CMREG[22] * dta_Shp2@data$stcon_dist
+dta_Shp2@data$model_int_early_23 <- CMREG[23] * dta_Shp2@data$rail_dist
+dta_Shp2@data$model_int_early_24 <- CMREG[24] * dta_Shp2@data$cv1995
+dta_Shp2@data$model_int_early_25 <- CMREG[25] * dta_Shp2@data$cv1994
+dta_Shp2@data$model_int_early_26 <- CMREG[26] * dta_Shp2@data$cy1995
+dta_Shp2@data$model_int_early_27 <- CMREG[27] * dta_Shp2@data$cy1994
+dta_Shp2@data$model_int_early_28 <- CMREG[28] * dta_Shp2@data$cy1993
+dta_Shp2@data$model_int_early_29 <- CMREG[29] * dta_Shp2@data$cy1992
+dta_Shp2@data$model_int_early_30 <- CMREG[30] * dta_Shp2@data$cy1991
+dta_Shp2@data$model_int_early_31 <- CMREG[31] * dta_Shp2@data$rv1995
+dta_Shp2@data$model_int_early_32 <- CMREG[32] * dta_Shp2@data$rv1994
+dta_Shp2@data$model_int_early_33 <- CMREG[33] * dta_Shp2@data$ry1995
+dta_Shp2@data$model_int_early_34 <- CMREG[34] * dta_Shp2@data$ry1994
+dta_Shp2@data$model_int_early_35 <- CMREG[35] * dta_Shp2@data$ry1993
+dta_Shp2@data$model_int_early_36 <- CMREG[36] * dta_Shp2@data$ry1992
+dta_Shp2@data$model_int_early_37 <- CMREG[37] * dta_Shp2@data$ry1991
+dta_Shp2@data$model_int_early_38 <- CMREG[38] * dta_Shp2@data$ry1990
+dta_Shp2@data$model_int_early_39 <- CMREG[39] * dta_Shp2@data$sov1995
+dta_Shp2@data$model_int_early_40 <- CMREG[40] * dta_Shp2@data$suv1995
+dta_Shp2@data$model_int_early_41 <- CMREG[41] * dta_Shp2@data$suv1994
+dta_Shp2@data$model_int_early_42 <- CMREG[42] * dta_Shp2@data$suy1995
+dta_Shp2@data$model_int_early_43 <- CMREG[43] * dta_Shp2@data$suy1994
+dta_Shp2@data$model_int_early_44 <- CMREG[44] * dta_Shp2@data$suy1993
+dta_Shp2@data$model_int_early_45 <- CMREG[45] * dta_Shp2@data$suy1992
+dta_Shp2@data$model_int_early_46 <- CMREG[46] * dta_Shp2@data$suy1991
+
+
+predict_NDVI_early_max <- model_int_early_1+model_int_early_2+model_int_early_3+model_int_early_4+model_int_early_5+model_int_early_6+
+  model_int_early_7+model_int_early_8+model_int_early_9+model_int_early_10+model_int_early_11+model_int_early_12+
+  model_int_early_13+model_int_early_14+model_int_early_15+model_int_early_16+model_int_early_17+model_int_early_18+model_int_early_19+
+  model_int_early_20+model_int_early_21
 
 ### -------------------
 
@@ -274,6 +336,8 @@ pModelMax_HP <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP
 pModelMax_HP_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 #temp_HPR <- ifelse(psm_Long$Year <= 1995 & high_pressure_regions == 1, 1, 0)
+
+## Stargazer Output
 
 stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year"),
           covariate.labels=c("TrtMnt_regend_y","MeanT","MeanP","Pop","MaxT","MaxP","MinT","MinP","Year"),
