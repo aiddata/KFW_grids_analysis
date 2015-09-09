@@ -9,9 +9,9 @@ library(ggplot2)
 library(devtools)
 devtools::install_github("itpir/SCI@master")
 library(SCI)
-library(stargazer)
-library(lmtest)
-library(multiwayvcov)
+# library(stargazer)
+# library(lmtest)
+# library(multiwayvcov)
 loadLibs()
 
 #Obtain grid data with community level info
@@ -70,9 +70,11 @@ air_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid D
 
 for (i in 2:length(air_temp))
 {
-  splt <- strsplit(colnames(air_temp)[i],"_")
-  month = splt[[1]][3]
-  year = splt[[1]][2]
+  # splt <- strsplit(colnames(air_temp)[i],"_")
+  # month = splt[[1]][3]
+  # year = splt[[1]][2]
+  year = substr(colnames(air_temp)[i], 6, 9)
+  month = substr(colnames(air_temp)[i], 10, 11)
   dt = paste(year,"-",month,sep="")
   colnames(air_temp)[i] <- dt
 }
@@ -112,9 +114,11 @@ precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Dat
 
 for (i in 2:length(precip))
 {
-  splt <- strsplit(colnames(precip)[i],"_")
-  month = splt[[1]][3]
-  year = splt[[1]][2]
+  # splt <- strsplit(colnames(precip)[i],"_")
+  # month = splt[[1]][3]
+  # year = splt[[1]][2]
+  year = substr(colnames(air_temp)[i], 6, 9)
+  month = substr(colnames(air_temp)[i], 10, 11)
   dt = paste(year,"-",month,sep="")
   colnames(precip)[i] <- dt
 }
