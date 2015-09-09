@@ -297,10 +297,26 @@ dta_Shp2@data$model_int_early_45 <- CMREG[45] * dta_Shp2@data$suy1992
 dta_Shp2@data$model_int_early_46 <- CMREG[46] * dta_Shp2@data$suy1991
 
 
-predict_NDVI_early_max <- model_int_early_1+model_int_early_2+model_int_early_3+model_int_early_4+model_int_early_5+model_int_early_6+
-  model_int_early_7+model_int_early_8+model_int_early_9+model_int_early_10+model_int_early_11+model_int_early_12+
-  model_int_early_13+model_int_early_14+model_int_early_15+model_int_early_16+model_int_early_17+model_int_early_18+model_int_early_19+
-  model_int_early_20+model_int_early_21
+dta_Shp2@data$predict_NDVI_max_pre <- dta_Shp2@data$model_int_early_1+dta_Shp2@data$model_int_early_2+dta_Shp2@data$model_int_early_3+dta_Shp2@data$model_int_early_4+dta_Shp2@data$model_int_early_5+dta_Shp2@data$model_int_early_6+
+  dta_Shp2@data$model_int_early_7+dta_Shp2@data$model_int_early_8+dta_Shp2@data$model_int_early_9+dta_Shp2@data$model_int_early_10+dta_Shp2@data$model_int_early_11+dta_Shp2@data$model_int_early_12+
+  dta_Shp2@data$model_int_early_13+dta_Shp2@data$model_int_early_14+dta_Shp2@data$model_int_early_15+dta_Shp2@data$model_int_early_16+dta_Shp2@data$model_int_early_17+dta_Shp2@data$model_int_early_18+dta_Shp2@data$model_int_early_19+
+  dta_Shp2@data$model_int_early_20+dta_Shp2@data$model_int_early_21+dta_Shp2@data$model_int_early_22+dta_Shp2@data$model_int_early_23+dta_Shp2@data$model_int_early_24+dta_Shp2@data$model_int_early_25+dta_Shp2@data$model_int_early_26+
+  dta_Shp2@data$model_int_early_27+dta_Shp2@data$model_int_early_28+dta_Shp2@data$model_int_early_29+dta_Shp2@data$model_int_early_30+dta_Shp2@data$model_int_early_31+dta_Shp2@data$model_int_early_32+
+  dta_Shp2@data$model_int_early_33+dta_Shp2@data$model_int_early_34+dta_Shp2@data$model_int_early_35+dta_Shp2@data$model_int_early_36+dta_Shp2@data$model_int_early_37+dta_Shp2@data$model_int_early_38+dta_Shp2@data$model_int_early_39+
+  dta_Shp2@data$model_int_early_40+dta_Shp2@data$model_int_early_41+dta_Shp2@data$model_int_early_42+dta_Shp2@data$model_int_early_43+dta_Shp2@data$model_int_early_44+dta_Shp2@data$model_int_early_45+dta_Shp2@data$model_int_early_46
+
+dta_Shp2_predict <-subset(dta_Shp2@data, select=c(GridID, predict_NDVI_max_pre))
+psm_Long_predict=merge(dta_Shp2_predict, psm_Long, by.x="GridID", by.y="GridID")
+psm_Long <- psm_Long_predict
+
+psm_Long$predict_NDVI_max_pre_cat <- NA
+psm_Long$predict_NDVI_max_pre_cat[which(psm_Long$predict_NDVI_max_pre)]
+
+pModelMax_E <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                predict_NDVI_max_pre*TrtMnt_demend_y + factor(reu_id) + Year"
+
+pModelMax_E_fit <- Stage2PSM(pModelMax_E ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
 
 ### -------------------
 
