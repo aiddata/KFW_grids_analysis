@@ -310,12 +310,17 @@ psm_Long_predict=merge(dta_Shp2_predict, psm_Long, by.x="GridID", by.y="GridID")
 psm_Long <- psm_Long_predict
 
 psm_Long$predict_NDVI_max_pre_cat <- NA
-psm_Long$predict_NDVI_max_pre_cat[which(psm_Long$predict_NDVI_max_pre)]
+psm_Long$predict_NDVI_max_pre_cat[psm_Long$predict_NDVI_max_pre>=30.490]=0
+psm_Long$predict_NDVI_max_pre_cat[psm_Long$predict_NDVI_max_pre<30.490]=1
+
 
 pModelMax_E <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                predict_NDVI_max_pre_cat*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_F <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
                 predict_NDVI_max_pre*TrtMnt_demend_y + factor(reu_id) + Year"
 
 pModelMax_E_fit <- Stage2PSM(pModelMax_E ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_F_fit <- Stage2PSM(pModelMax_F ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
 ### -------------------
