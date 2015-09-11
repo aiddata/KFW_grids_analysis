@@ -133,7 +133,7 @@ write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gri
 
 
 psm_Long_HP <- BuildTimeSeries(dta=psm_Pairs,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
-                               interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_","MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist", "reu_id", "Id" ))
+                               interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_","MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist","urbtravtim", "reu_id", "Id" ))
 psm_Long_HP$Year <- as.numeric(psm_Long_HP$Year)
 
 write.csv(psm_Long_HP,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_HP.csv")
@@ -313,14 +313,23 @@ predict_NDVI_median<-fivenum(psm_Long$predict_NDVI_max_pre.y)[3]
 psm_Long$predict_NDVI_max_pre_cat <- NA
 psm_Long$predict_NDVI_max_pre_cat <-ifelse(psm_Long$predict_NDVI_max_pre.y<predict_NDVI_median,1,0)
 
+pretrend_NDVI_median<-fivenum(psm_Long$pre_trend_NDVI_max)[3]
+psm_Long$pre_trend_NDVI_max_cat <- NA
+psm_Long$pre_trend_NDVI_max_cat <-ifelse(psm_Long$pre_trend_NDVI_max<pretrend_NDVI_median,1,0)
+
 
 pModelMax_E <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
                 predict_NDVI_max_pre_cat*TrtMnt_demend_y + factor(reu_id) + Year"
 pModelMax_F <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
                 predict_NDVI_max_pre.y*TrtMnt_demend_y + factor(reu_id) + Year"
 
-pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_F_fit <- Stage2PSM(pModelMax_F ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_G <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                pre_trend_NDVI_max_cat*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_H <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                pre_trend_NDVI_max*TrtMnt_demend_y + factor(reu_id) + Year"
+
+pModelMax_G_fit <- Stage2PSM(pModelMax_G,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_H_fit <- Stage2PSM(pModelMax_H ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
 ### -------------------
