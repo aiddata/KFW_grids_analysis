@@ -204,6 +204,17 @@ kfw_grid20$pre_trend_precip_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-
 
 kfw_grid20$pre_trend_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]",1992,1995,"GridID")
 
+kfw_grid20$pre_trend_cv <- timeRangeTrend(kfw_grid20,"cv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pre_trend_cy <- timeRangeTrend(kfw_grid20,"cy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pre_trend_rv <- timeRangeTrend(kfw_grid20,"rv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pre_trend_ry <- timeRangeTrend(kfw_grid20,"ry[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pre_trend_sov <- timeRangeTrend(kfw_grid20,"sov[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pre_trend_soy <- timeRangeTrend(kfw_grid20,"soy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pre_trend_suv <- timeRangeTrend(kfw_grid20,"suv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pre_trend_suy <- timeRangeTrend(kfw_grid20,"suy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pre_trend_wv <- timeRangeTrend(kfw_grid20,"wv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+
+
 ## Write Final Shapefile, with pre-trends
 writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_wpretrends.shp")
 
