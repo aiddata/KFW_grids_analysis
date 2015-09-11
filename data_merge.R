@@ -135,9 +135,9 @@ for (i in 2:length(precip_mean))
   colnames(precip_min)[i] <- sub("value.","MinP_",colnames(precip_min)[i])
 }
 
-#names(precip_mean)=gsub("ad_","",names(precip_mean), fixed=TRUE)
-#names(precip_max)=gsub("ad_","",names(precip_max), fixed=TRUE)
-#names(precip_min)=gsub("ad_","",names(precip_min), fixed=TRUE)
+precip_mean <- precip_mean[,-(35),drop=FALSE]
+precip_max <- precip_max[,-(35),drop=FALSE]
+precip_min <- precip_min[,-(35),drop=FALSE]
 
 kfw_grid11=merge(kfw_grid10, precip_mean, by.x="GridID", by.y="Id")
 kfw_grid12=merge(kfw_grid11, precip_max, by.x="GridID", by.y="Id")
@@ -201,6 +201,8 @@ kfw_grid20$pre_trend_temp_min <- timeRangeTrend(kfw_grid20,"MinT_[0-9][0-9][0-9]
 kfw_grid20$pre_trend_precip_mean <- timeRangeTrend(kfw_grid20,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 kfw_grid20$pre_trend_precip_max <- timeRangeTrend(kfw_grid20,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 kfw_grid20$pre_trend_precip_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+
+kfw_grid20$pre_trend_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]",1992,1995,"GridID")
 
 ## Write Final Shapefile, with pre-trends
 writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_wpretrends.shp")

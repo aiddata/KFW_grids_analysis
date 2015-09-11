@@ -225,13 +225,13 @@ HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + 
                cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
                soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
                suy1992 + suy1991 + wv1995 + wv1994 , data=dta_Shp2@data)
-HPModel = lm(pre_trend_NDVI_max ~ Pop_1990 + Pop_1995 + MeanT_82_95 + MinT_82_95 + 
+HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + MeanT_82_95 + MinT_82_95 + 
                MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
                mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
                cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
                suy1992 + suy1991, data=dta_Shp2@data)
-HPModel = lm(MaxL_levchange_95_82 ~ Pop_1990 + Pop_1995 + MeanT_82_95 + MinT_82_95 + 
+HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + MeanT_82_95 + MinT_82_95 + 
                MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
                mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
@@ -309,17 +309,17 @@ dta_Shp2_predict <-subset(dta_Shp2@data, select=c(GridID, predict_NDVI_max_pre))
 psm_Long_predict=merge(dta_Shp2_predict, psm_Long, by.x="GridID", by.y="GridID")
 psm_Long <- psm_Long_predict
 
+predict_NDVI_median<-fivenum(psm_Long$predict_NDVI_max_pre.y)[3]
 psm_Long$predict_NDVI_max_pre_cat <- NA
-psm_Long$predict_NDVI_max_pre_cat[psm_Long$predict_NDVI_max_pre>=30.490]=0
-psm_Long$predict_NDVI_max_pre_cat[psm_Long$predict_NDVI_max_pre<30.490]=1
+psm_Long$predict_NDVI_max_pre_cat <-ifelse(psm_Long$predict_NDVI_max_pre.y<predict_NDVI_median,1,0)
 
 
 pModelMax_E <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
                 predict_NDVI_max_pre_cat*TrtMnt_demend_y + factor(reu_id) + Year"
 pModelMax_F <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                predict_NDVI_max_pre*TrtMnt_demend_y + factor(reu_id) + Year"
+                predict_NDVI_max_pre.y*TrtMnt_demend_y + factor(reu_id) + Year"
 
-pModelMax_E_fit <- Stage2PSM(pModelMax_E ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_F_fit <- Stage2PSM(pModelMax_F ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
@@ -362,6 +362,12 @@ pModelMax_HP_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE
 
 stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year"),
           covariate.labels=c("TrtMnt_regend_y","MeanT","MeanP","Pop","MaxT","MaxP","MinT","MinP","Year"),
+          omit.stat=c("f","ser"),
+          title="Regression Results",
+          dep.var.labels=c("Max NDVI")
+)
+
+stargazer(pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","predict_NDVI_max_pre_cat","TrtMnt_demend_y:predict_NDVI_max_pre_cat", "TrtMnt_demend_y:predict_NDVI_max_pre.y", "predict_NDVI_max_pre.y"),
           omit.stat=c("f","ser"),
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
