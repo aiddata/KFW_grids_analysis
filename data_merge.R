@@ -20,15 +20,6 @@ kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gr
 #Drop Unused Variables at community level (NDVI, temp and precip because we're using at cell level); and pop, treatment info, and community identifiers because they are NA
 kfw_grid@data <- kfw_grid@data[,-(8:744),drop=FALSE]
 
-#Merge back in community-level pop and treatment variables from shapefile used for community-level analysis
-# kfw_grid0 = readShapePoly ("/Users/rbtrichler/Documents/AidData/Git Repos/KFW_Amazon/processed_data/kfw_analysis_inputs.shp")
-# kfw_grid0@data <- kfw_grid0@data[,-(7:743),drop=FALSE]
-# kfw_grid0@data <- kfw_grid0@data[,-(39:70),drop=FALSE]
-# names(kfw_grid0)[3]="Pop_1990_test"
-# names(kfw_grid0)[4]="Pop_1995_test"
-# names(kfw_grid0)[5]="Pop_2000_test"
-# kfw_grid00=merge(kfw_grid, kfw_grid0, by.x="Id", by.y="id")
-
 #Merge grid-level covariate files
 #elevation
 kfw_grid_elevation <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/elevation/extract.csv")
@@ -47,8 +38,12 @@ kfw_grid3= merge (kfw_grid2, kfw_grid_access, by.x="GridID", by.y="Id")
 
 #NDVI
 kfw_grid_NDVI <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/ltdr_yearly_max_mask_lt6k/extract_merge.csv")
-names(kfw_grid_NDVI)=gsub("ad", "MaxL", names(kfw_grid_NDVI), fixed=TRUE)
-kfw_grid4=merge (kfw_grid3, kfw_grid_NDVI, by.x="GridID", by.y="Id")
+
+kfw_grid_NDVI_dec<- kfw_grid_NDVI[,2:35]/10000
+kfw_grid_NDVI_all <- cbind(kfw_grid_NDVI[,c(-2:-35)], kfw_grid_NDVI_dec)
+names(kfw_grid_NDVI_all)=gsub("ad", "MaxL", names(kfw_grid_NDVI_all), fixed=TRUE)
+names(kfw_grid_NDVI_all)[1]="Id"
+kfw_grid4=merge (kfw_grid3, kfw_grid_NDVI_all, by.x="GridID", by.y="Id")
 
 #Distance to River
 kfw_grid_riv <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/rivers_dist/extract.csv")
@@ -66,7 +61,7 @@ names(kfw_grid_slope)[2]="Slope"
 kfw_grid7=merge(kfw_grid6, kfw_grid_slope, by.x="GridID", by.y="Id")
 
 #Temp
-air_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_air_temperature/extract_merge.csv")
+air_temp <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/updated_climate_data/temp_extract_merge.csv")
 
 for (i in 2:length(air_temp))
 {
@@ -96,16 +91,16 @@ for (i in 2:length(air_temp_mean))
   colnames(air_temp_min)[i] <- sub("value.","MinT_",colnames(air_temp_min)[i])
 }
 
-#names(air_temp_mean)=gsub("ad_","",names(air_temp_mean), fixed=TRUE)
-#names(air_temp_max)=gsub("ad_","",names(air_temp_max), fixed=TRUE)
-#names(air_temp_min)=gsub("ad_","",names(air_temp_min), fixed=TRUE)
+air_temp_mean <- air_temp_mean[,-(35),drop=FALSE]
+air_temp_max <- air_temp_max[,-(35),drop=FALSE]
+air_temp_min <- air_temp_min[,-(35),drop=FALSE]
 
 kfw_grid8=merge(kfw_grid7, air_temp_mean, by.x="GridID", by.y="Id")
 kfw_grid9=merge(kfw_grid8, air_temp_max, by.x="GridID", by.y="Id")
 kfw_grid10=merge(kfw_grid9, air_temp_min, by.x="GridID", by.y="Id")
 
 #Precip
-precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/terrestrial_precipitation/extract_merge.csv")
+precip <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/updated_climate_data/precip_extract_merge.csv")
 
 # splt splits columns when it sees _, e.g. ad_1982_02 yields 3 columns, "ad", "1982", "02" 
 # month defines that the first row, represented as [[1]], and the 3rd column, [3], is the month
@@ -117,8 +112,8 @@ for (i in 2:length(precip))
   # splt <- strsplit(colnames(precip)[i],"_")
   # month = splt[[1]][3]
   # year = splt[[1]][2]
-  year = substr(colnames(air_temp)[i], 6, 9)
-  month = substr(colnames(air_temp)[i], 10, 11)
+  year = substr(colnames(precip)[i], 6, 9)
+  month = substr(colnames(precip)[i], 10, 11)
   dt = paste(year,"-",month,sep="")
   colnames(precip)[i] <- dt
 }
@@ -195,9 +190,6 @@ kfw_grid20$NA_check <- 0
 kfw_grid20$NA_check[is.na(kfw_grid20$demend_y)] <- 1
 kfw_grid21 <- kfw_grid20[kfw_grid20$NA_check != 1,]
 kfw_grid20 <- kfw_grid21
-
-#Write Shapefile, without pre-trends
-writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs.shp")
 
 ## Create pre-trends
 kfw_grid20$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid20,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
