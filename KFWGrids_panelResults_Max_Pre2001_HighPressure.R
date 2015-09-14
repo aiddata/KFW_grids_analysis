@@ -72,8 +72,8 @@ dta_Shp$MaxP_82_95 <- timeRangeAvg(dta_Shp@data, "MaxP_",1982,1995)
 #Creating ntl and ag averages for available years
 
 dta_Shp$ntl_92_95 <- timeRangeAvg(dta_Shp@data, "ntl_",1992,1995)
-dta_Shp$cy_94_95 <- timeRangeAvg(dta_Shp@data, "cv",1994,1995)
-dta_Shp$cv_91_95 <- timeRangeAvg(dta_Shp@data, "cy",1991,1995)
+dta_Shp$cv_94_95 <- timeRangeAvg(dta_Shp@data, "cv",1994,1995)
+dta_Shp$cy_91_95 <- timeRangeAvg(dta_Shp@data, "cy",1991,1995)
 dta_Shp$rv_94_95 <- timeRangeAvg(dta_Shp@data, "rv", 1994,1995)
 dta_Shp$ry_90_95 <- timeRangeAvg(dta_Shp@data, "ry",1990,1995)
 dta_Shp$sov_94_95 <- timeRangeAvg(dta_Shp@data, "sov",1994,1995)
@@ -90,53 +90,56 @@ dta_Shp$BinNDVI=0
 dta_Shp$BinNDVI[dta_Shp$pre_trend_NDVI_max<0]=1
 
 
-dta = dta_Shp@data
-
-#logit with binary where projects with neg pre-trends=1, all else=0
-HPModel = logit(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-                  pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-                  Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp@data)
-#lm with only grid cells that have neg pre-trends, only 375 obs
-HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp@data)
-#lm with all grid cells, i.e. pos and neg pre-trends
-HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim, data=dta_Shp@data)
-#lm with all grid cells, i.e. pos and neg pre-trends, and all covars from any time period
-
-HPModel = glm(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
-                mine_dist + fedcon_dis + stcon_dist + rail_dist, family=binomial(logit), data=dta_Shp@data)
-HPModel = glm(BinNDVI ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-                Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
-                mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
-                cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
-                soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
-                suy1992 + suy1991 + wv1995 + wv1994, family=binomial(logit), data=dta_Shp@data)
-HPModel = lm(pre_trend_NDVI_max ~ terrai_are + Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + Slope + 
-               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
-               mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
-               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + sov1994 +
-               soy1995 + soy1994 + soy1993 + soy1992 + soy1991 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
-               suy1992 + suy1991 + wv1995 + wv1994 , data=dta_Shp@data)
-HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + MeanT_82_95 + MinT_82_95 + 
-               MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
-               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
-               mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
-               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + suv1995 + suv1994 + suy1995 + suy1994 + suy1993 +
-               suy1992 + suy1991, data=dta_Shp@data)
-HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + MeanT_82_95 + MinT_82_95 + 
-               MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + Slope + 
-               Elevation + Riv_Dist + ntl_1992 + ntl_1993 + ntl_1994 + ntl_1995 + urbtravtim + Road_dist + log_dist +
-               mine_dist + fedcon_dis + stcon_dist + rail_dist + cv1995 + cv1994 + cy1995 + cy1994 + cy1993 + cy1992 +
-               cy1991 + rv1995 + rv1994 + ry1995 + ry1994 + ry1993 + ry1992 + ry1991 + ry1990 + sov1995 + suv1995 + 
-               suv1994 + suy1995 + suy1994 + suy1993 +
-               suy1992 + suy1991, data=dta_Shp@data)
+HPModel = glm(BinNDVI ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
+                pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+                log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+                pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
+                pre_trend_suv + pre_trend_suy + pre_trend_wv,
+                family=binomial(logit), data=dta_Shp@data)
+#pre-trends on right hand side, for pre_trend_NDVI and level change outcomes 
+HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
+               pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+               pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
+               pre_trend_suv + pre_trend_suy + pre_trend_wv, data=dta_Shp@data)
+HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
+               pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+               pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
+               pre_trend_suv + pre_trend_suy + pre_trend_wv + ,data=dta_Shp@data)
+#averages over pre time period on right hand side, for pre_trend and level change outcomes
+HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
+               ntl_92_95 + cy_94_95 + cv_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
+               suy_91_95 + wv_94_95,data=dta_Shp@data)
+HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
+               ntl_92_95 + cy_94_95 + cv_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
+               suy_91_95 + wv_94_95,data=dta_Shp@data)
+#everything, pre_trend and level change
+HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
+               pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+               pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
+               pre_trend_suv + pre_trend_suy + pre_trend_wv + 
+               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
+               ntl_92_95 + cy_94_95 + cv_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
+               suy_91_95 + wv_94_95,data=dta_Shp@data)
+HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
+               pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+               pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
+               pre_trend_suv + pre_trend_suy + pre_trend_wv + 
+               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
+               ntl_92_95 + cy_94_95 + cv_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
+               suy_91_95 + wv_94_95,data=dta_Shp@data)
 
 
 #Running the model with cmreg
@@ -152,11 +155,11 @@ summary(HPModel)$r.squared
 #Define and run the first-stage of the PSM, calculating propensity scores
 #-------------------------------------------------
 #-------------------------------------------------
-psmModel <-  "TrtBin ~ terrai_are + Pop_1990 + MeanT_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + Slope + Elevation + MaxL_1995 + Riv_Dist + Road_dist +
-pre_trend_precip_mean + pre_trend_precip_max"
+psmModel <-  "TrtBin ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
+pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + ntl_1995 +Slope + Elevation + 
+MaxL_1995 + Riv_Dist + Road_dist + pre_trend_precip_mean + pre_trend_precip_max"
 
-psmRes <- SCI::SpatialCausalPSM(dta_Shp,mtd="logit",psmModel,drop="support",visual=FALSE)
+psmRes <- SCI::SpatialCausalPSM(dta_Shp,mtd="logit",psmModel,drop="support",visual=TRUE)
 
 
 #-------------------------------------------------
