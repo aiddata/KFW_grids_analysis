@@ -203,12 +203,12 @@ dta_Shp@data$model_int_early_36 <- CMREG[36] * dta_Shp@data$suv_94_95
 dta_Shp@data$model_int_early_37 <- CMREG[37] * dta_Shp@data$suy_91_95
 
 
-dta_Shp2@data$predict_NDVI_max_pre <- dta_Shp2@data$model_int_early_1+dta_Shp2@data$model_int_early_2+dta_Shp2@data$model_int_early_3+dta_Shp2@data$model_int_early_4+dta_Shp2@data$model_int_early_5+dta_Shp2@data$model_int_early_6+
-  dta_Shp2@data$model_int_early_7+dta_Shp2@data$model_int_early_8+dta_Shp2@data$model_int_early_9+dta_Shp2@data$model_int_early_10+dta_Shp2@data$model_int_early_11+dta_Shp2@data$model_int_early_12+
-  dta_Shp2@data$model_int_early_13+dta_Shp2@data$model_int_early_14+dta_Shp2@data$model_int_early_15+dta_Shp2@data$model_int_early_16+dta_Shp2@data$model_int_early_17+dta_Shp2@data$model_int_early_18+dta_Shp2@data$model_int_early_19+
-  dta_Shp2@data$model_int_early_20+dta_Shp2@data$model_int_early_21+dta_Shp2@data$model_int_early_22+dta_Shp2@data$model_int_early_23+dta_Shp2@data$model_int_early_24+dta_Shp2@data$model_int_early_25+dta_Shp2@data$model_int_early_26+
-  dta_Shp2@data$model_int_early_27+dta_Shp2@data$model_int_early_28+dta_Shp2@data$model_int_early_29+dta_Shp2@data$model_int_early_30+dta_Shp2@data$model_int_early_31+dta_Shp2@data$model_int_early_32+
-  dta_Shp2@data$model_int_early_33+dta_Shp2@data$model_int_early_34+dta_Shp2@data$model_int_early_35+dta_Shp2@data$model_int_early_36+dta_Shp2@data$model_int_early_37
+dta_Shp@data$predict_NDVI_max_pre <- dta_Shp@data$model_int_early_1+dta_Shp@data$model_int_early_2+dta_Shp@data$model_int_early_3+dta_Shp@data$model_int_early_4+dta_Shp@data$model_int_early_5+dta_Shp@data$model_int_early_6+
+  dta_Shp@data$model_int_early_7+dta_Shp@data$model_int_early_8+dta_Shp@data$model_int_early_9+dta_Shp@data$model_int_early_10+dta_Shp@data$model_int_early_11+dta_Shp@data$model_int_early_12+
+  dta_Shp@data$model_int_early_13+dta_Shp@data$model_int_early_14+dta_Shp@data$model_int_early_15+dta_Shp@data$model_int_early_16+dta_Shp@data$model_int_early_17+dta_Shp@data$model_int_early_18+dta_Shp@data$model_int_early_19+
+  dta_Shp@data$model_int_early_20+dta_Shp@data$model_int_early_21+dta_Shp@data$model_int_early_22+dta_Shp@data$model_int_early_23+dta_Shp@data$model_int_early_24+dta_Shp@data$model_int_early_25+dta_Shp@data$model_int_early_26+
+  dta_Shp@data$model_int_early_27+dta_Shp@data$model_int_early_28+dta_Shp@data$model_int_early_29+dta_Shp@data$model_int_early_30+dta_Shp@data$model_int_early_31+dta_Shp@data$model_int_early_32+
+  dta_Shp@data$model_int_early_33+dta_Shp@data$model_int_early_34+dta_Shp@data$model_int_early_35+dta_Shp@data$model_int_early_36+dta_Shp@data$model_int_early_37
 
 
 #-------------------------------------------------
@@ -266,8 +266,8 @@ write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gri
 
 
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
-pModelMax_C <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) + Year"
+pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + factor(reu_id) "
+pModelMax_C <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + ntl_ + factor(reu_id) + Year"
 pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
 
 pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
@@ -286,21 +286,24 @@ pModelMax_G <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_
 pModelMax_H <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
                 pre_trend_NDVI_max*TrtMnt_demend_y + factor(reu_id) + Year"
 
+pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_F_fit <- Stage2PSM(pModelMax_F,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
 pModelMax_G_fit <- Stage2PSM(pModelMax_G,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_H_fit <- Stage2PSM(pModelMax_H ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
 ## Stargazer Output
 
-stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year"),
-          covariate.labels=c("TrtMnt_regend_y","MeanT","MeanP","Pop","MaxT","MaxP","MinT","MinP","Year"),
+stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","ntl","Year"),
+          #covariate.labels=c("TrtMnt_end_y","MeanT","MeanP","Pop","MaxT","MaxP","MinT","MinP","ntl","Year"),
           omit.stat=c("f","ser"),
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )
 
 stargazer(pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, pModelMax_H_fit$cmreg,type="html",align=TRUE,
-          keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","predict_NDVI_max_pre_cat","TrtMnt_demend_y:predict_NDVI_max_pre_cat", "predict_NDVI_max_pre.y","TrtMnt_demend_y:predict_NDVI_max_pre.y","pre_trend_NDVI_max_cat","TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
+          keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","predict_NDVI_max_pre_cat","TrtMnt_demend_y:predict_NDVI_max_pre_cat", "predict_NDVI_max_pre","TrtMnt_demend_y:predict_NDVI_max_pre","pre_trend_NDVI_max_cat","TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
           omit.stat=c("f","ser"),
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
@@ -311,4 +314,5 @@ stargazer(pModelMax_G_fit $cmreg,pModelMax_H_fit $cmreg,type="html",align=TRUE,k
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )
+
 
