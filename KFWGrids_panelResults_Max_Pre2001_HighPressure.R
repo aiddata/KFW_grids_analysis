@@ -264,6 +264,7 @@ psm_Long$Year <- as.numeric(psm_Long$Year)
 
 write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
+psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + factor(reu_id) "
@@ -314,5 +315,20 @@ stargazer(pModelMax_G_fit $cmreg,pModelMax_H_fit $cmreg,type="html",align=TRUE,k
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )
+
+## trying to implement lag function
+
+#add month to "Year" column
+
+psm_Long_lag <- TimeSeriesLag(psm_Long,"Year","GridID",1,"MaxL_","MaxL_lag",1983,2010)
+psm_Long_lag_test <- psm_Long_lag[psm_Long_lag["GridID"]==319588,]
+
+pModelMax_I <- "MaxL_ ~ MaxL_lag"
+pModelMax_J <- "MaxL_ ~ MaxL_lag + factor(reu_id)"
+pModelMax_K <- "MaxL_ ~ pre_trend_NDVI_max + factor(reu_id)"
+
+pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
