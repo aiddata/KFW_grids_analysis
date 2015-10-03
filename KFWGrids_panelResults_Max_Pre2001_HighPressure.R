@@ -138,9 +138,9 @@ HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + pre_trend_temp_mean + pre_trend_tem
                log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
                pre_trend_cv + pre_trend_cy + pre_trend_ry + pre_trend_sov  +
                pre_trend_suv + pre_trend_suy + 
-               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
-               ntl_92_95 + cv_94_95 + cy_91_95 + ry_90_95 + suv_94_95 + 
-               suy_91_95,data=dta_Shp@data)
+               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + ntl_92_95 +
+               cv_94_95 + cy_91_95 + ry_90_95 + suv_94_95 + suy_91_95,
+               data=dta_Shp@data)
 #pre_trend_wv sov_94_95 + soy_91_95 +rv_94_95 wv_94_95pre_trend_rv
 #HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
@@ -267,25 +267,40 @@ write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gri
 psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + factor(reu_id) "
-pModelMax_C <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_  + ntl_ + factor(reu_id) + Year"
-pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
+
+pModelMax_C <- "MaxL_ ~ TrtMnt_demend_y + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
+#pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
+
+
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + Pop_ + factor(reu_id)"
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + factor(reu_id)"
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + MeanP_ + factor(reu_id)"
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + MaxT_ + factor(reu_id)"
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + MaxP_ + ntl_ + factor(reu_id)"
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + MinT_ + factor(reu_id)"
+pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + MinP_ + factor(reu_id)"
 
 pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_D_fit <- Stage2PSM(pModelMax_D ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
+#Create new interaction terms to assist in stargazer formatting later
+psm_Long$predict_NDVI_max_pre_cat_int<-psm_Long$predict_NDVI_max_pre_cat*psm_Long$TrtMnt_demend_y
+psm_Long$
 
-pModelMax_E <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                predict_NDVI_max_pre_cat*TrtMnt_demend_y + factor(reu_id) + Year"
-pModelMax_F <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                predict_NDVI_max_pre*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_E <- "MaxL_ ~ TrtMnt_demend_y+ Pop_ + MeanT_ + MeanP_  + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                predict_NDVI_max_pre_cat + predict_NDVI_max_pre_cat_int + factor(reu_id) + factor(Year)"
 
-pModelMax_G <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                pre_trend_NDVI_max_cat*TrtMnt_demend_y + factor(reu_id) + Year"
-pModelMax_H <- "MaxL_ ~ TrtMnt_demend_y + MeanT_ + MeanP_ + Pop_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                pre_trend_NDVI_max*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_F <- "MaxL_ ~ TrtMnt_demend_y + Pop_ +MeanT_ + MeanP_ +  MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                predict_NDVI_max_pre*TrtMnt_demend_y + factor(reu_id) + factor(Year)"
+
+pModelMax_G <- "MaxL_ ~ TrtMnt_demend_y +Pop_ + MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                pre_trend_NDVI_max_cat*TrtMnt_demend_y + factor(reu_id) + factor(Year)"
+pModelMax_H <- "MaxL_ ~ TrtMnt_demend_y + Pop_ +MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+                pre_trend_NDVI_max*TrtMnt_demend_y + factor(reu_id) + factor(Year)"
 
 pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_F_fit <- Stage2PSM(pModelMax_F,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
@@ -296,9 +311,12 @@ pModelMax_H_fit <- Stage2PSM(pModelMax_H ,psm_Long,type="cmreg", table_out=TRUE,
 
 ## Stargazer Output
 
-stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","ntl","Year"),
-          #covariate.labels=c("TrtMnt_end_y","MeanT","MeanP","Pop","MaxT","MaxP","MinT","MinP","ntl","Year"),
+stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
+          type="html",align=TRUE,
+          keep=c("TrtMnt","Pop_", "MeanT_","MeanP_","MaxT_","MaxP_","MinT_","MinP_"),
+          covariate.labels=c("Treatment_Demarcation", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip"),
           omit.stat=c("f","ser"),
+          keep.stat=c("n"),
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )
@@ -307,7 +325,9 @@ stargazer(pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, p
           keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","predict_NDVI_max_pre_cat","TrtMnt_demend_y:predict_NDVI_max_pre_cat", "predict_NDVI_max_pre","TrtMnt_demend_y:predict_NDVI_max_pre","pre_trend_NDVI_max_cat","TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
           omit.stat=c("f","ser"),
           title="Regression Results",
-          dep.var.labels=c("Max NDVI")
+          dep.var.labels=c("Max NDVI"),
+          digits=3,
+          digits.extra=7
 )
 
 stargazer(pModelMax_G_fit $cmreg,pModelMax_H_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","pre_trend_NDVI_max_cat","TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
@@ -316,12 +336,33 @@ stargazer(pModelMax_G_fit $cmreg,pModelMax_H_fit $cmreg,type="html",align=TRUE,k
           dep.var.labels=c("Max NDVI")
 )
 
-## trying to implement lag function
+stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
+          pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, pModelMax_H_fit$cmreg,
+          type="html",align=TRUE,
+          keep=c("TrtMnt","Pop", "MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year",
+                 "predict_NDVI_max_pre_cat",
+                 #"TrtMnt_demend_y:predict_NDVI_max_pre_cat", 
+                 "predict_NDVI_max_pre","TrtMnt_demend_y:predict_NDVI_max_pre","pre_trend_NDVI_max_cat",
+                 "TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
+#           covariate.labels=c("Treatment", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip",
+#                               "Predicted NDVI Pre-Trend (Cat)","Predicted NDVI Pre-Trend(Cat)*Treatment","Predicted NDVI Pre-Trend",
+#                               "Predicted NDVI Pre-Trend * Treatment", "NDVI Pre-Trend (Cat)", "NDVI Pre-Trend(Cat)*Treatment",
+#                               "NDVI Pre-Trend","NDVI Pre-Trend*Treatment", "Year"),
+          #keep.stat=c("n"),
+          order=c("TrtMnt_demend_y","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year","TrtMnt_demend_y:pre_trend_NDVI_max_cat"),
+          keep.stat=c("n"),
+          title="Regression Results",
+          dep.var.labels=c("Max NDVI")
+)
 
-#add month to "Year" column
+
+## trying to implement lag function
 
 psm_Long_lag <- TimeSeriesLag(psm_Long,"Year","GridID",1,"MaxL_","MaxL_lag",1983,2010)
 psm_Long_lag_test <- psm_Long_lag[psm_Long_lag["GridID"]==319588,]
+
+psm_Long_85 <- psm_Long[psm_Long["reu_id"]==85,]
+psm_Long_143 <- psm_Long[psm_Long["reu_id"]==143,]
 
 pModelMax_I <- "MaxL_ ~ MaxL_lag"
 pModelMax_J <- "MaxL_ ~ MaxL_lag + factor(reu_id)"
@@ -330,5 +371,4 @@ pModelMax_K <- "MaxL_ ~ pre_trend_NDVI_max + factor(reu_id)"
 pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-
 
