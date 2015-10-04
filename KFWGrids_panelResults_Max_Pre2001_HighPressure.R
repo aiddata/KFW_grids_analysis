@@ -220,7 +220,9 @@ psmModel <-  "TrtBin ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_mean 
 pre_trend_temp_max + MeanP_1995 + pre_trend_precip_min + pre_trend_NDVI_max + ntl_1995 +Slope + Elevation + 
 MaxL_1995 + Riv_Dist + Road_dist + pre_trend_precip_mean + pre_trend_precip_max"
 
-psmRes <- SCI::SpatialCausalPSM(dta_Shp,mtd="logit",psmModel,drop="support",visual=TRUE)
+psmRes <- SCI::SpatialCausalPSM(dta_Shp,mtd="logit",psmModel,
+                                drop="none",
+                                visual=TRUE)
 
 dta_Shp_psm = psmRes$data
 
@@ -231,7 +233,7 @@ pretrend_NDVI_median<-fivenum(dta_Shp_psm$pre_trend_NDVI_max)[3]
 dta_Shp_psm$pre_trend_NDVI_max_cat <- NA
 dta_Shp_psm$pre_trend_NDVI_max_cat <-ifelse(dta_Shp_psm$pre_trend_NDVI_max<pretrend_NDVI_median,1,0)
 
-predict_NDVI_median<-fivenum(dta_Shp_psm$predict_NDVI_max_pre)[3]
+predict_NDVI_median<-fivenum(dta_Shp$predict_NDVI_max_pre)[3]
 dta_Shp_psm$predict_NDVI_max_pre_cat <- NA
 dta_Shp_psm$predict_NDVI_max_pre_cat <-ifelse(dta_Shp_psm$predict_NDVI_max_pre<predict_NDVI_median,1,0)
 
@@ -264,7 +266,24 @@ psm_Long$Year <- as.numeric(psm_Long$Year)
 
 write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
-psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+varList=c("MaxL_")
+psm_Long_Untrimmed <- BuildTimeSeries(dta=dta_Shp,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","enforce_st"),
+                            interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+                                          "MaxP_","MinP_","MinT_", "reu_id", "Id" ))
+psm_Long_Untrimmed$Year <- as.numeric(psm_Long_Untrimmed$Year)
+
+write.csv(psm_Long_Untrimmed,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed.csv")
+
+psm_Long_Untrimmed$yrtodem <- NA
+psm_Long_Untrimmed$yrtodem=
+
+psmtest <- psm_Long_Untrimmed
+dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y))
+psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
+
+
+#psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+psm_Long <- psmtest2
 
 pModelMax_A <- "MaxL_ ~ TrtMnt_demend_y + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ TrtMnt_demend_y + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
