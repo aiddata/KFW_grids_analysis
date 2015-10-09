@@ -96,7 +96,7 @@ HPModel = glm(BinNDVI ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min +
                 log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
                 pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
                 pre_trend_suv + pre_trend_suy + pre_trend_wv,
-                family=binomial(logit), data=dta_Shp@data)
+              family=binomial(logit), data=dta_Shp@data)
 #pre-trends on right hand side, for pre_trend_NDVI and level change outcomes 
 HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
                pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
@@ -117,11 +117,11 @@ HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + Slope + Elevation + Riv_Dist + urbt
                ntl_92_95 + cv_94_95 + cy_91_95 + rv_94_95 + ry_90_95 + suv_94_95 + 
                suy_91_95 + wv_94_95,data=dta_Shp@data)
 sov_94_95 + soy_91_95 +
-HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
-               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
-               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
-               ntl_92_95 + cv_94_95 + cy_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
-               suy_91_95 + wv_94_95,data=dta_Shp@data)
+  HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+                 log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+                 MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
+                 ntl_92_95 + cv_94_95 + cy_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
+                 suy_91_95 + wv_94_95,data=dta_Shp@data)
 #pre-trends and avgs for ag, but only avgs for climate
 HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + 
                pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
@@ -140,17 +140,17 @@ HPModel = lm(pre_trend_NDVI_max ~ Pop_1995 + pre_trend_temp_mean + pre_trend_tem
                pre_trend_suv + pre_trend_suy + 
                MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 + ntl_92_95 +
                cv_94_95 + cy_91_95 + ry_90_95 + suv_94_95 + suy_91_95,
-               data=dta_Shp@data)
+             data=dta_Shp@data)
 #pre_trend_wv sov_94_95 + soy_91_95 +rv_94_95 wv_94_95pre_trend_rv
 #HPModel = lm(MaxL_levchange_95_82 ~ Pop_1995 + pre_trend_temp_mean + pre_trend_temp_min + 
-               pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
-               pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
-               log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
-               pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
-               pre_trend_suv + pre_trend_suy + pre_trend_wv + 
-               MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
-               ntl_92_95 + cv_94_95 + cy_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
-               suy_91_95 + wv_94_95,data=dta_Shp@data)
+pre_trend_temp_max + pre_trend_precip_min + pre_trend_precip_mean + pre_trend_precip_max + 
+  pre_trend_ntl + Slope + Elevation + Riv_Dist + urbtravtim + Road_dist + 
+  log_dist + mine_dist + fedcon_dis + stcon_dist + rail_dist + 
+  pre_trend_cv + pre_trend_cy + pre_trend_rv + pre_trend_ry + pre_trend_sov + pre_trend_soy +
+  pre_trend_suv + pre_trend_suy + pre_trend_wv + 
+  MeanT_82_95 + MinT_82_95 + MaxT_82_95 + MinP_82_95 + MeanP_82_95 + MaxP_82_95 +
+  ntl_92_95 + cv_94_95 + cy_91_95 + rv_94_95 + ry_90_95 + sov_94_95 + soy_91_95 + suv_94_95 + 
+  suy_91_95 + wv_94_95,data=dta_Shp@data)
 
 #Running the model with cmreg
 HPModel$Id <- cluster.vcov(HPModel,c(dta_Shp@data$Id))
@@ -256,20 +256,28 @@ dta_Shp_psm$predict_NDVI_max_pre_cat <-ifelse(dta_Shp_psm$predict_NDVI_max_pre<p
 #-------------------------------------------------
 #-------------------------------------------------
 
+# varList=c("MaxL_")
+# psm_Long <- BuildTimeSeries(dta=dta_Shp_psm,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
+#                             interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+#                                           "MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist",
+#                                           "urbtravtim", "pre_trend_NDVI_max","predict_NDVI_max_pre", "pre_trend_NDVI_max_cat",
+#                                           "predict_NDVI_max_pre_cat", "reu_id", "Id" ))
+# psm_Long$Year <- as.numeric(psm_Long$Year)
+# 
+# write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+
 varList=c("MaxL_")
-psm_Long <- BuildTimeSeries(dta=dta_Shp_psm,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
-                               interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
-                                             "MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist",
-                                             "urbtravtim", "pre_trend_NDVI_max","predict_NDVI_max_pre", "pre_trend_NDVI_max_cat",
-                                             "predict_NDVI_max_pre_cat", "reu_id", "Id" ))
-psm_Long$Year <- as.numeric(psm_Long$Year)
+psm_Long_Untrimmed <- BuildTimeSeries(dta=dta_Shp,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","enforce_st"),
+                                      interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+                                                    "MaxP_","MinP_","MinT_", "reu_id", "Id" ))
+psm_Long_Untrimmed$Year <- as.numeric(psm_Long_Untrimmed$Year)
 
-write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+write.csv(psm_Long_Untrimmed,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed.csv")
+write.csv(psm_Long_5yr,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed_5Yr.csv")
 
+psm_Long_Untrimmed <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed.csv")
 
-psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
-
-psmtest <- psm_Long
+psmtest <- psm_Long_Untrimmed
 dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y))
 psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
 psm_Long <- psmtest2
@@ -278,57 +286,33 @@ psm_Long <- psmtest2
 psm_Long$yrtodem <- NA
 psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
 
-#Create new Treatment variable that's correct, using demend_y
-psmtest3 <- psm_Long
-psmtest3$trtdem <- NA
-psmtest3$trtdem[which(psmtest3$Year<psmtest3$demend_y)]<-0
-psmtest3$trtdem[which(psmtest3$Year>=psmtest3$demend_y)]<-1
+#Create subset that only includes years within -5 and +5 years of demarcation
+psm_Long_5yr <- psm_Long
+test <- psm_Long_5yr[psm_Long_5yr$yrtodem>=-5,]
+test1 <- test[test$yrtodem<=5,]
+psm_Long <- test
 
-psm_Long <- psmtest3
+#replacing TrtMnt_demend_y with factor(yrtodem)
+pModelMax_A <- "MaxL_ ~ factor(yrtodem) + factor(reu_id)"
+pModelMax_B <- "MaxL_ ~ factor(yrtodem) + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
 
-pModelMax_A <- "MaxL_ ~ trtdem + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
-
-pModelMax_C <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
-#pModelMax_D <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
-pModelMax_D <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
+pModelMax_C <- "MaxL_ ~ factor(yrtodem) + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
+#pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
+pModelMax_D <- "MaxL_ ~ factor(yrtodem) + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
 
 
-pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="lm", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_D_fit <- Stage2PSM(pModelMax_D ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
-#Create new interaction terms to assist in stargazer formatting later
-psm_Long$predict_NDVI_max_pre_cat_int<-psm_Long$predict_NDVI_max_pre_cat*psm_Long$trtdem
-psm_Long$predict_NDVI_max_pre_int <- psm_Long$predict_NDVI_max_pre*psm_Long$trtdem
-psm_Long$pre_trend_NDVI_max_cat_int <- psm_Long$pre_trend_NDVI_max_cat*psm_Long$trtdem
-psm_Long$pre_trend_NDVI_max_int <- psm_Long$pre_trend_NDVI_max*psm_Long$trtdem
-
-pModelMax_E <- "MaxL_ ~ trtdem+ Pop_ + MeanT_ + MeanP_  + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                predict_NDVI_max_pre_cat + predict_NDVI_max_pre_cat_int + factor(reu_id) + factor(Year)"
-
-pModelMax_F <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +  MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                predict_NDVI_max_pre + predict_NDVI_max_pre_int + factor(reu_id) + factor(Year)"
-
-pModelMax_G <- "MaxL_ ~ trtdem +Pop_ + MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                pre_trend_NDVI_max_cat + pre_trend_NDVI_max_cat_int + factor(reu_id) + factor(Year)"
-pModelMax_H <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
-                pre_trend_NDVI_max + pre_trend_NDVI_max_int + factor(reu_id) + factor(Year)"
-
-pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_F_fit <- Stage2PSM(pModelMax_F,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-
-pModelMax_G_fit <- Stage2PSM(pModelMax_G,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_H_fit <- Stage2PSM(pModelMax_H ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-
 
 ## Stargazer Output
 
-stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
+stargazer(pModelMax_A_fit $unstandardized, pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
           type="html",align=TRUE,
-          keep=c("TrtMnt","Pop_", "MeanT_","MeanP_","MaxT_","MaxP_","MinT_","MinP_"),
-          covariate.labels=c("Treatment_Demarcation", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip"),
+          keep=c("Pop", "MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year","factor"),
+          #covariate.labels=c("Treatment_Demarcation", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip"),
           omit.stat=c("f","ser"),
           keep.stat=c("n"),
           title="Regression Results",
@@ -353,21 +337,18 @@ stargazer(pModelMax_G_fit $cmreg,pModelMax_H_fit $cmreg,type="html",align=TRUE,k
 stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
           pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, pModelMax_H_fit$cmreg,
           type="html",align=TRUE,
-          keep=c("trt","Pop", "MeanT","MeanP","MaxT","MaxP","MinT","MinP",
-                 "predict_NDVI_max_pre_cat","predict_NDVI_max_pre_cat_int", 
-                 "predict_NDVI_max_pre","predict_NDVI_max_pre_int",
-                 "pre_trend_NDVI_max_cat","pre_trend_NDVI_max_cat_int",
-                 "pre_trend_NDVI_max","pre_trend_NDVI_max_int","Year"),
-          covariate.labels=c("Treatment", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip",
-                              "Predicted NDVI Pre-Trend (Cat)","Predicted NDVI Pre-Trend(Cat)*Treatment","Predicted NDVI Pre-Trend",
-                              "Predicted NDVI Pre-Trend * Treatment", "NDVI Pre-Trend (Cat)", "NDVI Pre-Trend(Cat)*Treatment",
-                              "NDVI Pre-Trend","NDVI Pre-Trend*Treatment", "Year"),
+          keep=c("TrtMnt","Pop", "MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year",
+                 "predict_NDVI_max_pre_cat",
+                 #"TrtMnt_demend_y:predict_NDVI_max_pre_cat", 
+                 "predict_NDVI_max_pre","TrtMnt_demend_y:predict_NDVI_max_pre","pre_trend_NDVI_max_cat",
+                 "TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
+          #           covariate.labels=c("Treatment", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip",
+          #                               "Predicted NDVI Pre-Trend (Cat)","Predicted NDVI Pre-Trend(Cat)*Treatment","Predicted NDVI Pre-Trend",
+          #                               "Predicted NDVI Pre-Trend * Treatment", "NDVI Pre-Trend (Cat)", "NDVI Pre-Trend(Cat)*Treatment",
+          #                               "NDVI Pre-Trend","NDVI Pre-Trend*Treatment", "Year"),
           #keep.stat=c("n"),
-          order=c("trtdem","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","NDVI","Year"),
+          order=c("TrtMnt_demend_y","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year","TrtMnt_demend_y:pre_trend_NDVI_max_cat"),
           keep.stat=c("n"),
-          add.lines=list(c("Observations","246,007","246,007","246,007","246,007","246,007","246,007","246,007","246,007"),
-               c("Community Fixed Effects?","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes"),
-               c("Year Fixed Effects?","No","No","No","Yes","Yes","Yes","Yes","Yes")),
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )
@@ -389,3 +370,29 @@ pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TR
 pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
+##robustness checks
+
+#checking that year to demarcation computed correctly for all
+psm_demyear <- psm_Long
+psm_demyear <- psm_Long[psm_Long$Year==psm_Long$demend_y,]
+#this should be equal to 0:
+summary(psm_demyear$yrtodem)
+
+#hist of grid cells per year to demarcation
+hist(psm_Long$yrtodem, breaks=29)
+
+#hist of grid cells per year of demarcation
+hist(psm_Long$demend_y)
+
+#hist of communities per year of demarcation
+psm_Long_agg <- aggregate(psm_Long, by=list(psm_Long$reu_id),FUN=mean, na.rm=TRUE)
+hist(psm_Long_agg$demend_y)
+
+#hist of cells per year of demarcation (but only 1 cell, not full time series)
+hist(dta_Shp@data$demend_y)
+
+#hist of cells per community
+hist(psm_Long$reu_id, breaks=106)
+
+#subset 1997
+psm_Long_1997<-subset(psm_Long,demend_y==1997)
