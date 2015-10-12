@@ -372,6 +372,14 @@ stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,p
           dep.var.labels=c("Max NDVI")
 )
 
+stargazer(psm_Long, type="html",
+          keep=c("MaxL","Slope","Road","Riv","Elevation","terrai_are","Pop","Mean","Min","MaxT",
+          "MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre"),
+          covariate.labels=c("NDVI","Slope (degree)","Distance to Road (m)","Distance to River (m)","Elevation (m)",
+                             "Area (hectares)","Population Density","Mean Temperature","Mean Precipitation",
+                             "Min Temperature","Min Precipitation","Max Temperature","Max Precipitation",
+                             "NDVI Pre Trend","Predicted NDVI Pre Trend"),
+          omit.summary.stat=c("n"))
 
 ## trying to implement lag function
 
