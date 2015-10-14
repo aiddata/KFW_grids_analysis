@@ -256,26 +256,37 @@ dta_Shp_psm$predict_NDVI_max_pre_cat <-ifelse(dta_Shp_psm$predict_NDVI_max_pre<p
 #-------------------------------------------------
 #-------------------------------------------------
 
+# varList=c("MaxL_")
+# psm_Long <- BuildTimeSeries(dta=dta_Shp_psm,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
+#                             interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+#                                           "MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist",
+#                                           "urbtravtim", "pre_trend_NDVI_max","predict_NDVI_max_pre", "pre_trend_NDVI_max_cat",
+#                                           "predict_NDVI_max_pre_cat", "reu_id", "Id" ))
+# psm_Long$Year <- as.numeric(psm_Long$Year)
+# 
+# write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+
 varList=c("MaxL_")
-psm_Long <- BuildTimeSeries(dta=dta_Shp_psm,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
-                            interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
-                                          "MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist",
-                                          "urbtravtim", "pre_trend_NDVI_max","predict_NDVI_max_pre", "pre_trend_NDVI_max_cat",
-                                          "predict_NDVI_max_pre_cat", "reu_id", "Id" ))
-psm_Long$Year <- as.numeric(psm_Long$Year)
+psm_Long_Untrimmed <- BuildTimeSeries(dta=dta_Shp,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","enforce_st"),
+                                      interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+                                                    "MaxP_","MinP_","MinT_", "reu_id", "Id" ))
+psm_Long_Untrimmed$Year <- as.numeric(psm_Long_Untrimmed$Year)
 
-write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+write.csv(psm_Long_Untrimmed,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed.csv")
+write.csv(psm_Long_5yr,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed_5Yr.csv")
 
-psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+psm_Long_Untrimmed <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed.csv")
 
-
-#merge in demarcation year to create years to demarcation variable
-psmtest <- psm_Long
+psmtest <- psm_Long_Untrimmed
 dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y, enforce_st))
 psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
 psm_Long <- psmtest2
 
-#Create new Treatment variable that's correct, using demend_y
+#Create years to demarcation
+psm_Long$yrtodem <- NA
+psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
+
+#Create correct demarcation treatment variable
 psmtest3 <- psm_Long
 psmtest3$trtdem <- NA
 psmtest3$trtdem[which(psmtest3$Year<psmtest3$demend_y)]<-0
@@ -283,31 +294,51 @@ psmtest3$trtdem[which(psmtest3$Year>=psmtest3$demend_y)]<-1
 
 psm_Long <- psmtest3
 
-#write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Trimmed_trtdem.csv")
+#Check new dem treatment variable
+psm_demyear <- psm_Long
+psm_demyear <- psm_Long[psm_Long$Year==psm_Long$demend_y,]
+#this should be equal to 0:
+summary(psm_demyear$yrtodem)
 
-#Create years to demarcation
-psm_Long$yrtodem <- NA
-psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
+#Create correct enforcement treatment variable
+
+#change 1 community (reu_id=84) where enforcement starts 1 year before demarcation to start in year of demarcation
+psmtest4 <- psm_Long
+psmtest4$enfdiff= psmtest4$enforce_st - psmtest4$demend_y
+table(psmtest4$enfdiff)
+psmenf <- subset(psmtest4, psmtest4$enfdiff<0)
+table(psmenf$reu_id)
+
+psmtest4$enforce_st[which(psmtest4$reu_id==84)]<-2007
+psm_Long <- psmtest4
+
+#create enforcement treatment var
+psmtest5 <- psm_Long
+psmtest5$trtenf <- 0
+psmtest5$trtenf[which(psmtest5$Year>=psmtest5$enforce_st)]<-1
+
+psm_Long <- psmtest5
 
 #Create subset that only includes years within -5 and +5 years of demarcation
-psm_Long_5yr <- psm_Long
-test <- psm_Long_5yr[psm_Long_5yr$yrtodem>=-5,]
-test1 <- test[test$yrtodem<=5,]
-psm_Long <- test1
+# psm_Long_5yr <- psm_Long
+# test <- psm_Long_5yr[psm_Long_5yr$yrtodem>=-5,]
+# test1 <- test[test$yrtodem<=5,]
+# psm_Long <- test
 
 #replacing TrtMnt_demend_y with factor(yrtodem)
-pModelMax_A <- "MaxL_ ~ factor(yrtodem) + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ factor(yrtodem) + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
+pModelMax_A <- "MaxL_ ~ trtdem + trtenf + factor(reu_id)"
+pModelMax_B <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
 
-pModelMax_C <- "MaxL_ ~ factor(yrtodem) + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
-#pModelMax_D <- "MaxL_ ~ TrtMnt_demend_y + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + ntl_ + pre_trend_NDVI_cat*TrtMnt_demend_y + factor(reu_id) + Year"
-pModelMax_D <- "MaxL_ ~ factor(yrtodem) + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
+pModelMax_C <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
+pModelMax_D <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
+pModelMax_E <- "MaxL_ ~ trtdem + trtenf + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
 
 
-pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="lm", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_D_fit <- Stage2PSM(pModelMax_D ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_E_fit <- Stage2PSM(pModelMax_E ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
 ## Stargazer Output
@@ -356,6 +387,23 @@ stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,p
           dep.var.labels=c("Max NDVI")
 )
 
+stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
+          pModelMax_E_fit $cmreg,
+          type="html",align=TRUE,
+          keep=c("trt","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year"),
+          covariate.labels=c("Treatment (Demarcation)","Treatment (Demarcation + Enforcement Support)","Population",
+                             "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip","Year"),
+          add.lines=list(c("Observations","422,066","422,066","422,066","422,066","422,066"),
+                         c("Community Fixed Effects?","Yes","Yes","Yes","Yes","Yes"),
+                         c("Year Fixed Effects?","No","No","No","Yes","Yes")),
+          order=c("trt","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year"),
+          title="Regression Results",
+          dep.var.labels=c("Max NDVI"))
+
+
+####-------------------------------------------
+#### Workspace
+###--------------------------------------------
 
 ## trying to implement lag function
 
@@ -373,7 +421,7 @@ pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TR
 pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
-#Looking at distribution in year to dem
+##robustness checks
 
 #checking that year to demarcation computed correctly for all
 psm_demyear <- psm_Long
@@ -384,12 +432,18 @@ summary(psm_demyear$yrtodem)
 #hist of grid cells per year to demarcation
 hist(psm_Long$yrtodem, breaks=29)
 
-#hist of demend_y
+#hist of grid cells per year of demarcation
 hist(psm_Long$demend_y)
 
 #hist of communities per year of demarcation
 psm_Long_agg <- aggregate(psm_Long, by=list(psm_Long$reu_id),FUN=mean, na.rm=TRUE)
 hist(psm_Long_agg$demend_y)
 
-ViewTimeSeries(psm_Long,psm_Long$reu_id,psm_Long$yrtodem,"MaxL_[0-9][0-9][0-9][0-9]")
+#hist of cells per year of demarcation (but only 1 cell, not full time series)
+hist(dta_Shp@data$demend_y)
 
+#hist of cells per community
+hist(psm_Long$reu_id, breaks=106)
+
+#subset 1997
+psm_Long_1997<-subset(psm_Long,demend_y==1997)

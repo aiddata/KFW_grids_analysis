@@ -277,8 +277,9 @@ write.csv(psm_Long_5yr,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval
 
 psm_Long_Untrimmed <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Untrimmed.csv")
 
-psmtest <- psm_Long_Untrimmed
-dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y))
+#merge in demarcation and enforcement year to create years to demarcation variable
+psmtest <- psm_Long
+dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y, enforce_st))
 psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
 psm_Long <- psmtest2
 
@@ -286,11 +287,21 @@ psm_Long <- psmtest2
 psm_Long$yrtodem <- NA
 psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
 
+#Create new Treatment variable that's correct, using demend_y
+psmtest3 <- psm_Long
+psmtest3$trtdem <- NA
+psmtest3$trtdem[which(psmtest3$Year<psmtest3$demend_y)]<-0
+psmtest3$trtdem[which(psmtest3$Year>=psmtest3$demend_y)]<-1
+
+psm_Long <- psmtest3
+
+#write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_Trimmed_trtdem.csv")
+
 #Create subset that only includes years within -5 and +5 years of demarcation
 psm_Long_5yr <- psm_Long
 test <- psm_Long_5yr[psm_Long_5yr$yrtodem>=-5,]
 test1 <- test[test$yrtodem<=5,]
-psm_Long <- test
+psm_Long <- test1
 
 #replacing TrtMnt_demend_y with factor(yrtodem)
 pModelMax_A <- "MaxL_ ~ factor(yrtodem) + factor(reu_id)"
@@ -353,6 +364,10 @@ stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,p
           dep.var.labels=c("Max NDVI")
 )
 
+
+#-------------------------------
+## Workspace
+#-------------------------------
 
 ## trying to implement lag function
 
