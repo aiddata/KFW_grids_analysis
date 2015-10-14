@@ -274,6 +274,7 @@ dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y))
 psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
 psm_Long <- psmtest2
 
+
 #Create years to demarcation
 psm_Long$yrtodem <- NA
 psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
@@ -285,6 +286,20 @@ psmtest3$trtdem[which(psmtest3$Year<psmtest3$demend_y)]<-0
 psmtest3$trtdem[which(psmtest3$Year>=psmtest3$demend_y)]<-1
 
 psm_Long <- psmtest3
+
+#Add enforcement start year
+psmtest4 <- psm_Long
+dtatest <- subset(dta_Shp@data, select=c(GridID,enforce_st))
+psmtest5=merge(psmtest4,dtatest, by.x="GridID", by.y="GridID")
+
+psmtest5$enfdiff= psmtest5$enforce_st - psmtest5$demend_y
+summary(psmtest5$enfdiff)
+psmenf <- subset(psmtest5, psmtest5$enfdiff<0)
+table(psmenf$reu_id)
+
+psmenf$reu_id[psmtest5$enfdiff==-1]
+
+## Run Models
 
 pModelMax_A <- "MaxL_ ~ trtdem + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
@@ -396,4 +411,15 @@ pModelMax_K <- "MaxL_ ~ pre_trend_NDVI_max + factor(reu_id)"
 pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
+## trying to weight by size of community
+
+psm_Long$commwt <- 1/psm_Long$terrai_are
+summary(psm_Long$commwt)
+
+summary(stdz(psm_Long$terrai_are,psm_Long$commwt))
+
+library(SDMTools)
+wt.mean(psm_Long$terrai_are,psm_Long$commwt)
+wt.sd(psm_Long$terrai,psm_Long$commwt)
 
