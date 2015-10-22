@@ -297,8 +297,6 @@ summary(psmtest5$enfdiff)
 psmenf <- subset(psmtest5, psmtest5$enfdiff<0)
 table(psmenf$reu_id)
 
-psmenf$reu_id[psmtest5$enfdiff==-1]
-
 psmtest5$enforce_st[which(psmtest5$reu_id==84)]<-2007
 
 #create enforcement treatment var
@@ -308,22 +306,40 @@ table(psmtest5$trtenf)
 
 psm_Long <- psmtest5
 
+#Create post-2004 and post-2008 dummy
+psm_Long$Post2004 <- 0
+psm_Long$Post2004[psm_Long$Year > 2004] <- 1
+
+psm_Long$Post2008<- 0
+psm_Long$Post2008[psm_Long$Year>2008]<-1
+
 ## Run Models
 
 pModelMax_A <- "MaxL_ ~ trtdem + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
 
 pModelMax_C <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
+pModelMax_C2004 <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtdem + factor(reu_id)"
+pModelMax_C1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtenf + factor(reu_id)"
+
 pModelMax_D <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
 pModelMax_D1 <- "MaxL_ ~ trtdem + trtenf+ Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
+pModelMax_D2004 <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtdem + factor(Year) + factor(reu_id)"
+pModelMax_D1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtenf + factor(Year) + factor(reu_id)"
 
 
 pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_C2004_fit <- Stage2PSM(pModelMax_C2004 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_C1_2004_fit <- Stage2PSM(pModelMax_C1_2004 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
 pModelMax_D_fit <- Stage2PSM(pModelMax_D ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_D1_fit <- Stage2PSM(pModelMax_D1 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
+pModelMax_D2004_fit <- Stage2PSM(pModelMax_D2004 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_D1_2004_fit <- Stage2PSM(pModelMax_D1_2004 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 #Create new interaction terms to assist in stargazer formatting later
 psm_Long$predict_NDVI_max_pre_cat_int<-psm_Long$predict_NDVI_max_pre_cat*psm_Long$trtdem
@@ -394,6 +410,23 @@ stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,p
           add.lines=list(c("Observations","246,007","246,007","246,007","246,007","246,007","246,007","246,007","246,007","246,007"),
                c("Community Fixed Effects?","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes","Yes"),
                c("Year Fixed Effects?","No","No","No","Yes","Yes","Yes","Yes","Yes","Yes")),
+          title="Regression Results",
+          dep.var.labels=c("Max NDVI")
+)
+
+stargazer(pModelMax_C2004_fit $cmreg, pModelMax_C1_2004_fit $cmreg,pModelMax_D2004_fit $cmreg,
+          pModelMax_D1_2004_fit $cmreg,
+          type="html",align=TRUE,
+          keep=c("trt","Pop", "MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year"),
+          covariate.labels=c("Treatment (Demarcation)","Treatment (Demarcation + Enforcement Support)", 
+                             "Treatment (Demarcation)*Post2004", "Treatment (Dem + Enf)*Post2004",
+                             "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip",
+                             "Min Temp","Min Precip", "Year"),
+          order=c("trt","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","NDVI","Year"),
+          keep.stat=c("n"),
+          add.lines=list(c("Observations","246,007","246,007","246,007","246,007"),
+                         c("Community Fixed Effects?","Yes","Yes","Yes","Yes"),
+                         c("Year Fixed Effects?","No","No","Yes","Yes")),
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )

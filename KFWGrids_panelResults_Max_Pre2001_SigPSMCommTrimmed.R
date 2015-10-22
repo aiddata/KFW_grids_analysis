@@ -327,22 +327,35 @@ psm_Long <- psmtest5
 
 #Create subset that only includes reu_ids for the pairs made from 1st stage PSM (at community level) with 
 # only the predictors that were significant (slope, elevation, road distance, pre-trend in min annual temp) at the COMMUNITY level
+
+#psm_pairs (37 pairs, 74 communities)
+
+pairs_id <- c(131,114,118,142,117, 121, 105, 148,  
+  93, 107, 152, 150, 154, 112, 158, 159, 
+  160, 161, 162, 163, 164, 146, 110, 180, 
+  168, 151, 157,173, 176, 115,  80,  92,74,
+  119, 132,  88, 128, 155, 129, 156, 100, 123,
+  106, 172,  87,  78,  73, 122, 169, 144, 133, 111,  85,  89,
+  79, 86,  91, 175,  81,  82, 125, 126, 141,  96, 109, 
+  103, 143, 137, 135, 136, 134, 179, 178,  95)
+
+#psmRes (no pairs, 92 communities out of 106, 14 dropped for common support)
+
+res_id <- c(80, 131, 120, 114, 118,  96,  92, 109, 142,  74, 143, 167, 116, 117, 119, 132,  88, 128, 155, 129, 156, 100, 121, 123, 102,  98, 135,
+103, 130, 105, 153, 127, 104, 134, 125, 126, 141, 124, 106, 148,  93, 172, 107,  87,  94,  78,  73, 152, 150, 154, 112, 138, 178, 136,
+122, 169, 144, 158, 159, 145, 133, 160, 161, 162, 163, 164, 165, 146, 113, 137, 110, 180,  95, 111, 168, 179, 151,  85, 157,  89, 170,
+79,  86,  91, 173, 174, 175, 176, 177,  81,  82, 115)
+
+#subsetting the data
 psm_Long_sigpsm <- psm_Long
-psm_Long_sigpsm1 <- psm_Long_sigpsm[psm_Long_sigpsm$reu_id %in% c(131,114,118,142,117, 121, 105, 148,  
-                                                                  93, 107, 152, 150, 154, 112, 158, 159, 
-                                                                  160, 161, 162, 163, 164, 146, 110, 180, 
-                                                                  168, 151, 157,173, 176, 115,  80,  92,74,
-                                                                  119, 132,  88, 128, 155, 129, 156, 100, 123,
-                                                                  106, 172,  87,  78,  73, 122, 169, 144, 133, 111,  85,  89,
-                                                                  79, 86,  91, 175,  81,  82, 125, 126, 141,  96, 109, 
-                                                                  103, 143, 137, 135, 136, 134, 179, 178,  95),]
+psm_Long_sigpsm1 <- psm_Long_sigpsm[psm_Long_sigpsm$reu_id %in% res_id,]
 
 psm_Long <- psm_Long_sigpsm1
 
 ## Run Models
 
 pModelMax_A <- "MaxL_ ~ trtdem + trtenf + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ ttrtdem + trtenf  + Pop_ + MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
+pModelMax_B <- "MaxL_ ~ trtdem + trtenf  + Pop_ + MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_  + factor(reu_id) "
 pModelMax_C <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_  + Year + factor(reu_id)"
 pModelMax_C1 <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_+ MaxT_ + MaxP_ + MinT_ + MinP_  + factor(Year) + factor(reu_id)"
 pModelMax_C2 <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_+ MaxT_ + MaxP_ + MinT_ + MinP_  + factor(Year) + factor(reu_id)"
@@ -361,12 +374,20 @@ pModelMax_C2_fit <- Stage2PSM(pModelMax_C2 ,psm_Long,type="cmreg", table_out=TRU
 stargazer(pModelMax_A_fit$cmreg,pModelMax_B_fit$cmreg,pModelMax_C_fit$cmreg,
           pModelMax_C1_fit$cmreg,pModelMax_C2_fit$cmreg,
           type="html", align=TRUE,
-          keep=c("TrtMnt","Pop","Mean","Max","Min","Year"),
+          keep=c("trt","Pop","Mean","Max","Min","Year"),
           covariate.labels=c("Treatment (Demarcation)","Treatment (Demarcation + Enforcement Support)","Population","Mean Temp",
-                             "Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip","Year"),
+                           "Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip","Year"),
           omit.stat=c("f","ser"),
-          add.lines=list(c("Observations","2146","2146","2146","2146","2146"),
-                         c("Community Fixed Effects?","Yes","Yes","Yes","Yes","Yes","Yes"),
+          add.lines=list(c("Observations","404,405","404,405","404,405","404,405","404,405"),
+                         c("Community Fixed Effects?","Yes","Yes","Yes","Yes","Yes"),
                          c("Year Fixed Effects?","No","No","No","Yes","Yes")),
           title="Regression Results",
           dep.var.labels=c("Max NDVI"))
+
+
+##Workspace##
+
+reg=lm(MaxL_ ~ factor(Year), data=psm_Long)
+resid <- residuals(reg)
+summary(resid)
+plot(resid)
