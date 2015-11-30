@@ -391,3 +391,10 @@ reg=lm(MaxL_ ~ factor(Year), data=psm_Long)
 resid <- residuals(reg)
 summary(resid)
 plot(resid)
+
+ViewTimeSeries(dta=psm_Long,IDfield="reu_id",TrtField="TrtBin",idPre="MaxL_")
+
+ggplot(data = psm_Pairs, aes(x=variable, y=value, group="reu_id",colour=factor("TrtBin")),  
+       geom_line(size=.5, linetype=3), 
+       stat_summary(fun.y=mean,aes(x=variable, y=value, group="TrtBin",colour=factor("TrtBin")),data=psm_Long,geom='line',size=1.5),
+       theme(axis.text.x=element_text(angle=90,hjust=1)))
