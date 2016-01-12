@@ -6,15 +6,11 @@
 #-------------------------------------------------
 #-------------------------------------------------
 library(devtools)
-# devtools::install_github("itpir/SCI@master")
-# library(SCI)
-
-devtools::install_github("sgoodm/SCI@master")
-library(SCI2)
-
-# library(stargazer)
-# library(lmtest)
-# library(multiwayvcov)
+devtools::install_github("itpir/SCI@master")
+library(SCI)
+library(stargazer)
+library(lmtest)
+library(multiwayvcov)
 loadLibs()
 #-------------------------------------------------
 #-------------------------------------------------
