@@ -49,7 +49,6 @@ int_Shp <- dta_Shp[dta_Shp@data$NA_check != 1,]
 dta_Shp <- int_Shp
 
 
-
 #-------------------------------------------------
 #-------------------------------------------------
 #Define and run the first-stage of the PSM, calculating propensity scores
