@@ -20,6 +20,11 @@ kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gr
 #Drop Unused Variables at community level (NDVI, temp and precip because we're using at cell level); and pop, treatment info, and community identifiers because they are NA
 kfw_grid@data <- kfw_grid@data[,-(8:744),drop=FALSE]
 
+#Drop non-PPTAL communities (but leave in those that were never demarcated)
+kfw_grid$NA_check <- 0
+kfw_grid$NA_check[is.na(kfw_grid$reu_id)] <- 1
+kfw_grid0 <- kfw_grid[kfw_grid$NA_check != 1,]
+
 #Merge grid-level covariate files
 #elevation
 kfw_grid_elevation <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/elevation/extract.csv")
