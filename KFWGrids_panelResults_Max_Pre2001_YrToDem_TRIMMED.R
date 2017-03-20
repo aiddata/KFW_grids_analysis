@@ -295,6 +295,9 @@ test <- psm_Long_5yr[psm_Long_5yr$yrtodem>=-5,]
 test1 <- test[test$yrtodem<=5,]
 psm_Long <- test1
 
+#Replace year 5 with all that were demarcated 5 years ago or longer
+psm_Long$yrtodem[psm_Long$yrtodem>=5]<-5
+
 #replacing TrtMnt_demend_y with factor(yrtodem)
 pModelMax_A <- "MaxL_ ~ factor(yrtodem) + factor(reu_id)"
 pModelMax_B <- "MaxL_ ~ factor(yrtodem) + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "

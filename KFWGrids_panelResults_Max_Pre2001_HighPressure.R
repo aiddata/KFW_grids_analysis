@@ -391,21 +391,6 @@ stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,p
           dep.var.labels=c("Max NDVI")
 )
 
-stargazer(pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, pModelMax_H_fit$cmreg,type="html",align=TRUE,
-          keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","predict_NDVI_max_pre_cat","TrtMnt_demend_y:predict_NDVI_max_pre_cat", "predict_NDVI_max_pre","TrtMnt_demend_y:predict_NDVI_max_pre","pre_trend_NDVI_max_cat","TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
-          omit.stat=c("f","ser"),
-          title="Regression Results",
-          dep.var.labels=c("Max NDVI"),
-          digits=3,
-          digits.extra=7
-)
-
-stargazer(pModelMax_G_fit $cmreg,pModelMax_H_fit $cmreg,type="html",align=TRUE,keep=c("TrtMnt","MeanT_","MeanP_","Pop_","MaxT_","MaxP_","MinT_","MinP_","Year","pre_trend_NDVI_max_cat","TrtMnt_demend_y:pre_trend_NDVI_max_cat","pre_trend_NDVI_max","TrtMnt_demend_y:pre_trend_NDVI_max"),
-          omit.stat=c("f","ser"),
-          title="Regression Results",
-          dep.var.labels=c("Max NDVI")
-)
-
 stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
           pModelMax_D1_fit $cmreg,
           pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, pModelMax_H_fit$cmreg,
@@ -461,6 +446,7 @@ stargazer(pModelMax_C_reuid_fit $cmreg,pModelMax_C_reuidenf_fit $cmreg,
           dep.var.labels=c("Max NDVI")
 )
 
+##STATS TABLE
 stargazer(psm_Long, type="html",
           keep=c("MaxL","Slope","Road","Riv","Elevation","terrai_are","Pop","Mean","Min","MaxT",
           "MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre"),
@@ -469,6 +455,11 @@ stargazer(psm_Long, type="html",
                              "Min Temperature","Min Precipitation","Max Temperature","Max Precipitation",
                              "NDVI Pre Trend","Predicted NDVI Pre Trend"),
           omit.summary.stat=c("n"))
+
+
+#---------------------
+#Workspace
+#---------------------
 
 ## trying to implement lag function
 
@@ -486,14 +477,49 @@ pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TR
 pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
-## trying to weight by size of community
+## trying to weight by size of community for summary stats
 
 psm_Long$commwt <- 1/psm_Long$terrai_are
 summary(psm_Long$commwt)
-
-summary(stdz(psm_Long$terrai_are,psm_Long$commwt))
 
 library(SDMTools)
 wt.mean(psm_Long$terrai_are,psm_Long$commwt)
 wt.sd(psm_Long$terrai,psm_Long$commwt)
 
+##creating correlation coefficients with outcome/control vars and year of demarcation for summary stats table
+#produced for JEEM second revision
+
+cor(psm_Long$Slope,psm_Long$demend_y)
+
+##learning how to output tables
+test<-function(mean) {
+  tabl<-mean(psm_Long$terrai_are)
+  return(tabl)
+  }
+
+apply(psmenf,2,function(x) length (x[x<0]))
+y<-psm_Long$demend_y
+test<-psm_Long[,1:4]
+tbl<-sapply(test,function(x) cor(x,y))
+
+tbl<-sapply(test,function(x) mean(x))
+xtable(tbl)
+
+design.matrix <- model.matrix(mean(x), data = test)
+xtable(design.matrix, digits = 0)
+
+dat <- psm_Long[1:3, 1:4]
+z <- xtable(bubba)
+ztab<-xtable(z)
+print.xtable(ztab,type="html")
+
+bubba<-data.frame(row.names<-names(tbl),matrix(unlist(tbl)))
+bub<-data.frame(row.names<-names(blah),matrix(unlist(blah)))
+
+blah<-sapply(dat,function(x) mean(x))
+bubba_large<-cbind(bubba,bub)
+bubba_large<-merge(bubba,bub,by.x=bubba$row.names....names.tbl.,by.y=bub$row.names....names.blah.)
+
+sapply(psmenf, function(x) cor(psmenf$demend_y,psmenf$terrai_are))
+dtf <- sapply(psmenf, each(min, max, mean, sd, var, median, IQR))
+dtf
