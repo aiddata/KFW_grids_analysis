@@ -194,17 +194,17 @@ kfw_grid20<-kfw_grid13
 # kfw_grid20 <- kfw_grid21
 
 ## Create pre-trends
-kfw_grid20$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid20,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-
-kfw_grid20$pre_trend_temp_mean <- timeRangeTrend(kfw_grid20,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid20$pre_trend_temp_max <- timeRangeTrend(kfw_grid20,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid20$pre_trend_temp_min <- timeRangeTrend(kfw_grid20,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-
-kfw_grid20$pre_trend_precip_mean <- timeRangeTrend(kfw_grid20,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid20$pre_trend_precip_max <- timeRangeTrend(kfw_grid20,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-kfw_grid20$pre_trend_precip_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-
-kfw_grid20$pre_trend_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]",1992,1995,"GridID")
+# kfw_grid20$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid20,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# 
+# kfw_grid20$pre_trend_temp_mean <- timeRangeTrend(kfw_grid20,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# kfw_grid20$pre_trend_temp_max <- timeRangeTrend(kfw_grid20,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# kfw_grid20$pre_trend_temp_min <- timeRangeTrend(kfw_grid20,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# 
+# kfw_grid20$pre_trend_precip_mean <- timeRangeTrend(kfw_grid20,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# kfw_grid20$pre_trend_precip_max <- timeRangeTrend(kfw_grid20,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# kfw_grid20$pre_trend_precip_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+# 
+# kfw_grid20$pre_trend_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]",1992,1995,"GridID")
 
 # kfw_grid20$pre_trend_cv <- timeRangeTrend(kfw_grid20,"cv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
 # kfw_grid20$pre_trend_cy <- timeRangeTrend(kfw_grid20,"cy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
@@ -218,6 +218,22 @@ kfw_grid20$pre_trend_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]"
 
 
 ## Write Final Shapefile, with pre-trends
-writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_wpretrends_ALL151.shp")
+writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_ALL151.shp")
+
+kfw_grid20 = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_ALL151.shp")
+
+#-------------------------
+##Convert to panel dataset
+#-------------------------
+
+varList=c("MaxL_")
+psm_Long <- BuildTimeSeries(dta=kfw_grid20,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
+                            interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+                                          "MaxP_","MinP_","MinT_","ntl_",
+                                          "urbtravtim","reu_id", "Id" ))
+
+psm_Long$Year <- as.numeric(psm_Long$Year)
+
+write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_ALL151.csv")
 
 
