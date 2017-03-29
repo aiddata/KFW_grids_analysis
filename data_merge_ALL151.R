@@ -223,22 +223,52 @@ kfw_grid20<-kfw_grid13
 
 
 ## Write Final Shapefile, with pre-trends
-writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_ALL151.shp")
+writePolyShape(kfw_grid20,"OhFive_gridanalysis_inputs_ALL151.shp")
 
-kfw_grid20 = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/OhFive_gridanalysis_inputs_ALL151.shp")
+kfw_grid20 = readShapePoly("OhFive_gridanalysis_inputs_ALL151.shp")
 
 #-------------------------
 ##Convert to panel dataset
 #-------------------------
 
-varList=c("MaxL_")
-psm_Long <- BuildTimeSeries(dta=kfw_grid20,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
-                            interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
-                                          "MaxP_","MinP_","MinT_","ntl_",
-                                          "urbtravtim","reu_id", "Id" ))
+#Drop data for unused years (after 2010) in order to allow "reshape" to work
+kfw_grid_reshape <- kfw_grid20
+kfw_grid_reshape1<-kfw_grid_reshape[,-grep("(2011)",names(kfw_grid_reshape))]
+kfw_grid_reshape2<-kfw_grid_reshape1[,-grep("(2012)",names(kfw_grid_reshape1))]
+kfw_grid_reshape3<-kfw_grid_reshape2[,-grep("(2013)",names(kfw_grid_reshape2))]
+kfw_grid_reshape4<-kfw_grid_reshape3[,-grep("(2014)",names(kfw_grid_reshape3))]
+kfw_grid_reshape5<-kfw_grid_reshape4[,-grep("(1981)",names(kfw_grid_reshape4))]
 
-psm_Long$Year <- as.numeric(psm_Long$Year)
+kfw_grid_reshape5<-kfw_grid_reshape5[,order(names(kfw_grid_reshape5))]
 
-write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_ALL151.csv")
+MeanT<-grep("MeanT_",names(kfw_grid_reshape5))
+MeanP<-grep("MeanP_",names(kfw_grid_reshape5))
+MinT<-grep("MinT_",names(kfw_grid_reshape5))
+MaxT<-grep("MaxT_",names(kfw_grid_reshape5))
+MinP<-grep("MinP_",names(kfw_grid_reshape5))
+MaxP<-grep("MaxP_",names(kfw_grid_reshape5))
+MaxL<-grep("MaxL_",names(kfw_grid_reshape5))
 
+all_reshape <- c(MeanT,MeanP,MaxT,MaxP,MinP,MinT,MaxL)
+psm_Long <- reshape(kfw_grid_reshape5@data, varying=all_reshape, direction="long",idvar="GridID",sep="_",timevar="Year")
+
+write.csv(psm_Long,file="psm_Long_ALL151.csv")
+# varList=c("MaxL_")
+# psm_Long <- BuildTimeSeries(dta=kfw_grid20,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
+#                             interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
+#                                           "MaxP_","MinP_","MinT_","ntl_",
+#                                           "urbtravtim","reu_id", "Id" ))
+# 
+# all_reshape <- c(PCloss, mean_ln, minairTemp, maxairTemp, meanairTemp, minPre, maxPre, meanPre, MinDist, DecayDist, ProjCount, DecayDist100, DecayDist25)
+# DFa4 <- reshape(DFa3, varying=all_reshape,direction="long", idvar="ID", sep="_", timevar="Year")
+# 
+# 
+# psm_Long$Year <- as.numeric(psm_Long$Year)
+
+##Scratch
+
+sub29<-kfw_grid_reshape5[,kfw_grid_reshape5@data$GridID==225929]
+View(sub29@data)
+View(sub29@data[,(100:200)])
+View(sub29@data[,(200:270)])
 
