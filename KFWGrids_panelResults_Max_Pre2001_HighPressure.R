@@ -218,9 +218,8 @@ dta_Shp@data$predict_NDVI_max_pre <- dta_Shp@data$model_int_early_1+dta_Shp@data
 #-------------------------------------------------
 psmModel <-  "TrtBin ~ terrai_are + Pop_1995 + MeanT_1995 + pre_trend_temp_min + 
 pre_trend_temp_max + MeanP_1995  + pre_trend_NDVI_max +Slope + Elevation + 
-MaxL_1995 + Road_dist + pre_trend_precip_mean + pre_trend_precip_max"
-# + pre_trend_temp_mean + pre_trend_precip_min  + Riv_Dist
-#+ ntl_1995
+MaxL_1995 + Road_dist + pre_trend_precip_mean + pre_trend_precip_max + 
+pre_trend_temp_mean + pre_trend_precip_min  + Riv_Dist+ ntl_1995"
 psmRes <- SCI::SpatialCausalPSM(dta_Shp,mtd="logit",psmModel,
                                 drop="support",
                                 visual=TRUE)
@@ -256,24 +255,63 @@ View(trttable)
 #to a long-form dataset for the panel model.
 #-------------------------------------------------
 #-------------------------------------------------
+kfw_grid@data <- kfw_grid@data[,-(8:744),drop=FALSE]
 
-varList=c("MaxL_")
-psm_Long <- BuildTimeSeries(dta=dta_Shp_psm,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
-                               interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
-                                             "MaxP_","MinP_","MinT_","ntl_", "fedcon_dis", "stcon_dist", "log_dist", "mine_dist", "rail_dist",
-                                             "urbtravtim", "pre_trend_NDVI_max","predict_NDVI_max_pre", "pre_trend_NDVI_max_cat",
-                                             "predict_NDVI_max_pre_cat", "reu_id", "Id" ))
-psm_Long$Year <- as.numeric(psm_Long$Year)
+#Eliminate data for years outside study period 1982-2010
+dta_Shp_psm1 <- dta_Shp_psm
+dta_Shp_psm2<-dta_Shp_psm1[,-grep("(2011)",names(dta_Shp_psm1))]
+dta_Shp_psm3<-dta_Shp_psm2[,-grep("(2012)",names(dta_Shp_psm2))]
+dta_Shp_psm4<-dta_Shp_psm3[,-grep("(2013)",names(dta_Shp_psm3))]
+dta_Shp_psm5<-dta_Shp_psm4[,-grep("(2014)",names(dta_Shp_psm4))]
+dta_Shp_psm6<-dta_Shp_psm5[,-grep("(1981)",names(dta_Shp_psm5))]
 
-write.csv(psm_Long,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
+#Eliminate data for vars we don't need
+dta_Shp_psm_a <- dta_Shp_psm6
+dta_Shp_psm_b<-dta_Shp_psm_a[,-grep("(cv)",names(dta_Shp_psm_a))]
+dta_Shp_psm_c<-dta_Shp_psm_b[,-grep("(cy)",names(dta_Shp_psm_b))]
+dta_Shp_psm_d<-dta_Shp_psm_c[,-grep("(rv)",names(dta_Shp_psm_c))]
+dta_Shp_psm_e<-dta_Shp_psm_d[,-grep("(ry)",names(dta_Shp_psm_d))]
+dta_Shp_psm_f<-dta_Shp_psm_e[,-grep("(sov)",names(dta_Shp_psm_e))]
+dta_Shp_psm_g<-dta_Shp_psm_f[,-grep("(soy)",names(dta_Shp_psm_f))]
+dta_Shp_psm_h<-dta_Shp_psm_g[,-grep("(suv)",names(dta_Shp_psm_g))]
+dta_Shp_psm_i<-dta_Shp_psm_h[,-grep("(suy)",names(dta_Shp_psm_h))]
+dta_Shp_psm_j<-dta_Shp_psm_i[,-grep("(wv)",names(dta_Shp_psm_i))]
+dta_Shp_psm_k<-dta_Shp_psm_j[,-grep("(model_int)",names(dta_Shp_psm_j))]
+dta_Shp_psm_l<-dta_Shp_psm_k[,-grep("(_95)",names(dta_Shp_psm_k))]
+
+dta_Shp_psm_reshape<-dta_Shp_psm_l
+
+dta_Shp_psm_reshape<-dta_Shp_psm_reshape[,order(names(dta_Shp_psm_reshape))]
+
+MeanT<-grep("MeanT_",names(dta_Shp_psm_reshape))
+MeanP<-grep("MeanP_",names(dta_Shp_psm_reshape))
+MinT<-grep("MinT_",names(dta_Shp_psm_reshape))
+MaxT<-grep("MaxT_",names(dta_Shp_psm_reshape))
+MinP<-grep("MinP_",names(dta_Shp_psm_reshape))
+MaxP<-grep("MaxP_",names(dta_Shp_psm_reshape))
+MaxL<-grep("MaxL_",names(dta_Shp_psm_reshape))
+
+all_reshape <- c(MeanT,MeanP,MaxT,MaxP,MinP,MinT,MaxL)
+psm_Long <- reshape(dta_Shp_psm_reshape@data, varying=all_reshape, direction="long",idvar="GridID",sep="_",timevar="Year")
 
 
+psm_Long_test<-psm_Long
+write.csv(psm_Long_test,file="/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_test.csv")
+
+#check values for panel dataset against wide-form dataset
+sub88<-dta_Shp_psm_reshape[dta_Shp_psm_reshape@data$GridID==319588,]
+View(sub88@data)
+View(sub88@data[,(100:200)])
+View(sub88@data[,(200:300)])
+View(psm_Long[,10:105])
+
+#---
 psm_Long <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long.csv")
 
-psmtest <- psm_Long
-dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y, enforce_st))
-psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
-psm_Long <- psmtest2
+# psmtest <- psm_Long
+# dtatest <- subset(dta_Shp@data, select=c(GridID, demend_y, enforce_st))
+# psmtest2=merge(psmtest, dtatest, by.x="GridID", by.y="GridID")
+# psm_Long <- psmtest2
 
 
 #Create years to demarcation
@@ -315,11 +353,11 @@ psm_Long$Post2008[psm_Long$Year>2008]<-1
 
 ## Run Models
 
-pModelMax_A <- "MaxL_ ~ trtdem + factor(reu_id)"
-pModelMax_B <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(reu_id) "
-
-pModelMax_C <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + factor(reu_id)"
-
+pModelMax_A <- "MaxL ~ trtdem + factor(reu_id)"
+pModelMax_B <- "MaxL ~ trtdem +  MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(reu_id) "
+#Pop_ was dropped
+pModelMax_C <- "MaxL ~ trtdem + MeanT + MeanP +MaxT + MaxP + MinT + MinP + Year + factor(reu_id)"
+#Pop_ was dropped
 pModelMax_C_reuid <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
 pModelMax_C_reuidenf <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
 pModelMax_C_reuid_fe <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(Year) + factor(reu_id)"
@@ -329,8 +367,8 @@ pModelMax_C_reuidenf_fe <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +Max
 pModelMax_C2004 <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtdem + factor(reu_id)"
 pModelMax_C1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtenf + factor(reu_id)"
 
-pModelMax_D <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
-pModelMax_D1 <- "MaxL_ ~ trtdem + trtenf+ Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + factor(Year) + factor(reu_id)"
+pModelMax_D <- "MaxL ~ trtdem  +MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
+pModelMax_D1 <- "MaxL ~ trtdem + trtenf +MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
 pModelMax_D2004 <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtdem + factor(Year) + factor(reu_id)"
 pModelMax_D1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtenf + factor(Year) + factor(reu_id)"
 
@@ -361,15 +399,15 @@ psm_Long$predict_NDVI_max_pre_int <- psm_Long$predict_NDVI_max_pre*psm_Long$trtd
 psm_Long$pre_trend_NDVI_max_cat_int <- psm_Long$pre_trend_NDVI_max_cat*psm_Long$trtdem
 psm_Long$pre_trend_NDVI_max_int <- psm_Long$pre_trend_NDVI_max*psm_Long$trtdem
 
-pModelMax_E <- "MaxL_ ~ trtdem+ Pop_ + MeanT_ + MeanP_  + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+pModelMax_E <- "MaxL ~ trtdem + MeanT + MeanP  + MaxT + MaxP + MinT + MinP + 
                 predict_NDVI_max_pre_cat + predict_NDVI_max_pre_cat_int + factor(reu_id) + factor(Year)"
 
-pModelMax_F <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +  MaxT_ + MaxP_ + MinT_ + MinP_ + 
+pModelMax_F <- "MaxL ~ trtdem +MeanT + MeanP +  MaxT + MaxP + MinT + MinP + 
                 predict_NDVI_max_pre + predict_NDVI_max_pre_int + factor(reu_id) + factor(Year)"
 
-pModelMax_G <- "MaxL_ ~ trtdem +Pop_ + MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+pModelMax_G <- "MaxL ~ trtdem  + MeanT + MeanP + MaxT + MaxP + MinT + MinP + 
                 pre_trend_NDVI_max_cat + pre_trend_NDVI_max_cat_int + factor(reu_id) + factor(Year)"
-pModelMax_H <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ + MaxT_ + MaxP_ + MinT_ + MinP_ + 
+pModelMax_H <- "MaxL ~ trtdem +MeanT + MeanP + MaxT + MaxP + MinT + MinP + 
                 pre_trend_NDVI_max + pre_trend_NDVI_max_int + factor(reu_id) + factor(Year)"
 
 pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
