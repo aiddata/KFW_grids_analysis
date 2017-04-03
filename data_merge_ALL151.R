@@ -17,8 +17,10 @@ loadLibs()
 #Obtain grid data with community level info
 kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/shps/OhFive_wComm/CommunityFactors_Grid.shp")
 
-#Drop Unused Variables at community level (NDVI, temp and precip because we're using at cell level); and pop, treatment info, and community identifiers because they are NA
-kfw_grid@data <- kfw_grid@data[,-(8:744),drop=FALSE]
+#Drop Unused Variables at community level 
+#(Pop, slope, elevation, urban travel time, distance to river/road, NDVI, temp and precip because we're using at cell level)
+#keep treatment info and community identifiers
+kfw_grid@data <- kfw_grid@data[,-(5:744),drop=FALSE]
 
 #Drop non-PPTAL communities (but leave in those that were never demarcated)
 kfw_grid$NA_check <- 0
@@ -148,7 +150,70 @@ kfw_grid11=merge(kfw_grid10, precip_mean, by.x="GridID", by.y="Id")
 kfw_grid12=merge(kfw_grid11, precip_max, by.x="GridID", by.y="Id")
 kfw_grid13=merge(kfw_grid12, precip_min, by.x="GridID", by.y="Id")
 
-kfw_grid20<-kfw_grid13
+#Population (GPW v3, v4)
+#drop pop columns and rename to Pop_
+kfw_grid_pop <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/gpw_v3.v4/merge_kfw_grid_gpwv3.v4.csv")
+
+kfw_grid_pop<-kfw_grid_pop[,-grep("(sum)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(SP)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(Id)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(gpw_v3_density.2000)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(gpw_v4_density.2015)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(gpw_v4_density.2020)",names(kfw_grid_pop))]
+
+colnames(kfw_grid_pop)<-sub("gpw_v3_density.","Pop_",colnames(kfw_grid_pop))
+colnames(kfw_grid_pop)<-sub("gpw_v4_density.","Pop_",colnames(kfw_grid_pop))
+colnames(kfw_grid_pop)<-sub(".mean","",colnames(kfw_grid_pop))
+
+#interpolate so a value exists for every year from 1982-2010
+#use each 5 year segment to fill in between, and 1990-1995 change to fill in pre-1982
+#1982-1995
+kfw_grid_pop$Pop_90.95<-(kfw_grid_pop$Pop_1995-kfw_grid_pop$Pop_1990)/5
+kfw_grid_pop$Pop_1991<-kfw_grid_pop$Pop_1990+kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1992<-kfw_grid_pop$Pop_1991+kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1993<-kfw_grid_pop$Pop_1992+kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1994<-kfw_grid_pop$Pop_1993+kfw_grid_pop$Pop_90.95
+
+kfw_grid_pop$Pop_1989<-kfw_grid_pop$Pop_1990-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1988<-kfw_grid_pop$Pop_1989-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1987<-kfw_grid_pop$Pop_1988-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1986<-kfw_grid_pop$Pop_1987-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1985<-kfw_grid_pop$Pop_1986-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1984<-kfw_grid_pop$Pop_1985-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1983<-kfw_grid_pop$Pop_1984-kfw_grid_pop$Pop_90.95
+kfw_grid_pop$Pop_1982<-kfw_grid_pop$Pop_1983-kfw_grid_pop$Pop_90.95
+
+#1995-2000
+kfw_grid_pop$Pop_95.2000<-(kfw_grid_pop$Pop_2000-kfw_grid_pop$Pop_1995)/5
+kfw_grid_pop$Pop_1996<-kfw_grid_pop$Pop_1995+kfw_grid_pop$Pop_95.2000
+kfw_grid_pop$Pop_1997<-kfw_grid_pop$Pop_1996+kfw_grid_pop$Pop_95.2000
+kfw_grid_pop$Pop_1998<-kfw_grid_pop$Pop_1997+kfw_grid_pop$Pop_95.2000
+kfw_grid_pop$Pop_1999<-kfw_grid_pop$Pop_1998+kfw_grid_pop$Pop_95.2000
+
+#2000-2005
+kfw_grid_pop$Pop_2000.05<-(kfw_grid_pop$Pop_2005-kfw_grid_pop$Pop_2000)/5
+kfw_grid_pop$Pop_2001<-kfw_grid_pop$Pop_2000+kfw_grid_pop$Pop_2000.05
+kfw_grid_pop$Pop_2002<-kfw_grid_pop$Pop_2001+kfw_grid_pop$Pop_2000.05
+kfw_grid_pop$Pop_2003<-kfw_grid_pop$Pop_2002+kfw_grid_pop$Pop_2000.05
+kfw_grid_pop$Pop_2004<-kfw_grid_pop$Pop_2003+kfw_grid_pop$Pop_2000.05
+
+#2005-2010
+kfw_grid_pop$Pop_2005.10<-(kfw_grid_pop$Pop_2010-kfw_grid_pop$Pop_2005)/5
+kfw_grid_pop$Pop_2006<-kfw_grid_pop$Pop_2005+kfw_grid_pop$Pop_2005.10
+kfw_grid_pop$Pop_2007<-kfw_grid_pop$Pop_2006+kfw_grid_pop$Pop_2005.10
+kfw_grid_pop$Pop_2008<-kfw_grid_pop$Pop_2007+kfw_grid_pop$Pop_2005.10
+kfw_grid_pop$Pop_2009<-kfw_grid_pop$Pop_2008+kfw_grid_pop$Pop_2005.10
+
+#Drop unused columns for merge
+kfw_grid_pop<-kfw_grid_pop[,-grep("(Pop_90.95)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(Pop_95.2000)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(Pop_2000.05)",names(kfw_grid_pop))]
+kfw_grid_pop<-kfw_grid_pop[,-grep("(Pop_2005.10)",names(kfw_grid_pop))]
+
+kfw_grid13.1=merge(kfw_grid21, kfw_grid_pop, by="GridID")
+
+
+kfw_grid20<-kfw_grid13.1
 
 # ## Merge in high pressure covars (from Ash) at the community level: Vegetation, Soil Type Zones
 # # will drop out those to be merged in at grid level instead (distance to conservation units, logging, mining, railways)
@@ -248,11 +313,44 @@ MaxT<-grep("MaxT_",names(kfw_grid_reshape5))
 MinP<-grep("MinP_",names(kfw_grid_reshape5))
 MaxP<-grep("MaxP_",names(kfw_grid_reshape5))
 MaxL<-grep("MaxL_",names(kfw_grid_reshape5))
+Pop<-grep("Pop_",names(kfw_grid_reshape5))
 
-all_reshape <- c(MeanT,MeanP,MaxT,MaxP,MinP,MinT,MaxL)
+all_reshape <- c(MeanT,MeanP,MaxT,MaxP,MinP,MinT,MaxL,Pop)
 psm_Long <- reshape(kfw_grid_reshape5@data, varying=all_reshape, direction="long",idvar="GridID",sep="_",timevar="Year")
 
+#Create years to demarcation
+psm_Long$yrtodem <- NA
+psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
+
+#Create new Treatment variable that's correct, using demend_y
+psmtest3 <- psm_Long
+psmtest3$trtdem <- 0
+psmtest3$trtdem[which(psmtest3$Year<psmtest3$demend_y)]<-0
+psmtest3$trtdem[which(psmtest3$Year>=psmtest3$demend_y)]<-1
+
+psm_Long <- psmtest3
+
+#Add enforcement start year
+
+#correct communities with enforcement prior to demarcation
+psmtest5 <- psm_Long
+psmtest5$enfdiff= psmtest5$enforce_st - psmtest5$demend_y
+summary(psmtest5$enfdiff)
+psmenf <- subset(psmtest5, psmtest5$enfdiff<0)
+table(psmenf$reu_id)
+
+psmtest5$enforce_st[which(psmtest5$reu_id==84)]<-2007
+
+#create enforcement treatment var
+psmtest5$trtenf <- 0
+psmtest5$trtenf[which(psmtest5$Year>=psmtest5$enforce_st)]<-1
+table(psmtest5$trtenf)
+
+psm_Long <- psmtest5
+
+
 write.csv(psm_Long,file="psm_Long_ALL151.csv")
+
 # varList=c("MaxL_")
 # psm_Long <- BuildTimeSeries(dta=kfw_grid20,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
 #                             interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
@@ -267,8 +365,8 @@ write.csv(psm_Long,file="psm_Long_ALL151.csv")
 
 ##Scratch
 
-sub29<-kfw_grid_reshape5[,kfw_grid_reshape5@data$GridID==225929]
+sub29<-kfw_grid_reshape5[kfw_grid_reshape5@data$GridID==225929,]
 View(sub29@data)
 View(sub29@data[,(100:200)])
-View(sub29@data[,(200:270)])
+View(sub29@data[,(200:296)])
 
