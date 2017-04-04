@@ -1,5 +1,8 @@
 
-##Join extracted covar data at pixel level
+#-------------------------
+# Join extracted covariate data at grid cell level
+# All 151 PPTAL communities
+# Add covariates and create pre-trends needed to determine high pressure communities 
 
 library(maptools)
 library(reshape)
@@ -212,49 +215,52 @@ kfw_grid_pop<-kfw_grid_pop[,-grep("(Pop_2005.10)",names(kfw_grid_pop))]
 
 kfw_grid13.1=merge(kfw_grid21, kfw_grid_pop, by="GridID")
 
+kfw_grid13<-kfw_grid13.1
 
-kfw_grid20<-kfw_grid13.1
+##Write dataset prior to merging in high pressure covars and creating pre-trends
+#writePolyShape(kfw_grid13,"OhFive_gridanalysis_inputs_ALL151.shp")
 
-# ## Merge in high pressure covars (from Ash) at the community level: Vegetation, Soil Type Zones
-# # will drop out those to be merged in at grid level instead (distance to conservation units, logging, mining, railways)
-# 
-# kfw_grid_veg <- read.csv("/Users/rbtrichler/Google Drive/REU/KfW/Inputs/HighPressureCommCovars__Abbrev_Ash.csv")
-# kfw_grid_veg <- kfw_grid_veg[,-(10:27),drop=FALSE]
-# kfw_grid14=merge(kfw_grid13, kfw_grid_veg, by.x="Id", by.y="id")
-# 
-# ## Merge in high pressure covars (from Ash) at the community level: Crop Value and Yield
-# 
-# kfw_grid_crop=readShapePoly("/Users/rbtrichler/Google Drive/REU/KfW/Inputs/HighPressureCovars_CropYield/Indig_ag.shp")
-# kfw_grid_crop@data<-kfw_grid_crop@data[,-(1:13),drop=FALSE]
-# kfw_grid_crop@data<-kfw_grid_crop@data[,-(2:21),drop=FALSE]
-# kfw_grid_crop@data<-kfw_grid_crop@data[,-(183:184),drop=FALSE]
-# kfw_grid15=merge(kfw_grid14, kfw_grid_crop@data, by.x="Id", by.y="id")
-# 
-# ## Merge in high pressure covars (from Ash) at the GRID level: Distance to conservation units, mining, logging, railways
-# #Distance to Federal Conservation Unit
-# kfw_grid_fedcons<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_conservation_federal_units/dfcf_e.csv")
-# names(kfw_grid_fedcons)[2]="fedcon_dist"
-# kfw_grid16=merge(kfw_grid15, kfw_grid_fedcons, by.x="GridID", by.y="Id")
-# 
-# #Distance to State Conservation Unit
-# kfw_grid_stcons<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_conservation_state_units/dfcs_e.csv")
-# names(kfw_grid_stcons)[2]="stcon_dist"
-# kfw_grid17=merge(kfw_grid16, kfw_grid_stcons, by.x="GridID", by.y="Id")
-# 
-# #Distance to Logging Center
-# kfw_grid_log<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_logging_center/dflc_e.csv")
-# names(kfw_grid_log)[2]="log_dist"
-# kfw_grid18=merge(kfw_grid17, kfw_grid_log, by.x="GridID", by.y="Id")
-# 
-# #Distance to Mining Activity
-# kfw_grid_mine<- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_mining_interests/dfmi_e.csv")
-# names(kfw_grid_mine)[2]="mine_dist"
-# kfw_grid19=merge(kfw_grid18, kfw_grid_mine, by.x="GridID", by.y="Id")
-# 
-# #Distance to Railway
-# kfw_grid_rail<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_railways/dfrw_e.csv")
-# names(kfw_grid_rail)[2]="rail_dist"
-# kfw_grid20=merge(kfw_grid19, kfw_grid_rail, by.x="GridID", by.y="Id")
+##---
+#Merge in high pressure covars (from Ash) at the community level: Vegetation, Soil Type Zones
+# will drop out those to be merged in at grid level instead (distance to conservation units, logging, mining, railways)
+
+kfw_grid_veg <- read.csv("/Users/rbtrichler/Google Drive/REU/KfW/Inputs/HighPressureCommCovars__Abbrev_Ash.csv")
+kfw_grid_veg <- kfw_grid_veg[,-(10:27),drop=FALSE]
+kfw_grid14=merge(kfw_grid13, kfw_grid_veg, by.x="Id", by.y="id")
+
+## Merge in high pressure covars (from Ash) at the community level: Crop Value and Yield
+
+kfw_grid_crop=readShapePoly("/Users/rbtrichler/Google Drive/REU/KfW/Inputs/HighPressureCovars_CropYield/Indig_ag.shp")
+kfw_grid_crop@data<-kfw_grid_crop@data[,-(1:13),drop=FALSE]
+kfw_grid_crop@data<-kfw_grid_crop@data[,-(2:21),drop=FALSE]
+kfw_grid_crop@data<-kfw_grid_crop@data[,-(183:184),drop=FALSE]
+kfw_grid15=merge(kfw_grid14, kfw_grid_crop@data, by.x="Id", by.y="id")
+
+## Merge in high pressure covars (from Ash) at the GRID level: Distance to conservation units, mining, logging, railways
+#Distance to Federal Conservation Unit
+kfw_grid_fedcons<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_conservation_federal_units/dfcf_e.csv")
+names(kfw_grid_fedcons)[2]="fedcon_dist"
+kfw_grid16=merge(kfw_grid15, kfw_grid_fedcons, by.x="GridID", by.y="Id")
+
+#Distance to State Conservation Unit
+kfw_grid_stcons<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_conservation_state_units/dfcs_e.csv")
+names(kfw_grid_stcons)[2]="stcon_dist"
+kfw_grid17=merge(kfw_grid16, kfw_grid_stcons, by.x="GridID", by.y="Id")
+
+#Distance to Logging Center
+kfw_grid_log<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_logging_center/dflc_e.csv")
+names(kfw_grid_log)[2]="log_dist"
+kfw_grid18=merge(kfw_grid17, kfw_grid_log, by.x="GridID", by.y="Id")
+
+#Distance to Mining Activity
+kfw_grid_mine<- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_mining_interests/dfmi_e.csv")
+names(kfw_grid_mine)[2]="mine_dist"
+kfw_grid19=merge(kfw_grid18, kfw_grid_mine, by.x="GridID", by.y="Id")
+
+#Distance to Railway
+kfw_grid_rail<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/dist_from_railways/dfrw_e.csv")
+names(kfw_grid_rail)[2]="rail_dist"
+kfw_grid20=merge(kfw_grid19, kfw_grid_rail, by.x="GridID", by.y="Id")
 
 ## Eliminate non-PPTAL communities
 
@@ -264,33 +270,33 @@ kfw_grid20<-kfw_grid13.1
 # kfw_grid20 <- kfw_grid21
 
 ## Create pre-trends
-# kfw_grid20$pre_trend_NDVI_max <- timeRangeTrend(kfw_grid20,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# 
-# kfw_grid20$pre_trend_temp_mean <- timeRangeTrend(kfw_grid20,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# kfw_grid20$pre_trend_temp_max <- timeRangeTrend(kfw_grid20,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# kfw_grid20$pre_trend_temp_min <- timeRangeTrend(kfw_grid20,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# 
-# kfw_grid20$pre_trend_precip_mean <- timeRangeTrend(kfw_grid20,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# kfw_grid20$pre_trend_precip_max <- timeRangeTrend(kfw_grid20,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# kfw_grid20$pre_trend_precip_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
-# 
-# kfw_grid20$pre_trend_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]",1992,1995,"GridID")
+kfw_grid20$pt_NDVI_max <- timeRangeTrend(kfw_grid20,"MaxL_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
 
-# kfw_grid20$pre_trend_cv <- timeRangeTrend(kfw_grid20,"cv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
-# kfw_grid20$pre_trend_cy <- timeRangeTrend(kfw_grid20,"cy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
-# kfw_grid20$pre_trend_rv <- timeRangeTrend(kfw_grid20,"rv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
-# kfw_grid20$pre_trend_ry <- timeRangeTrend(kfw_grid20,"ry[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
-# kfw_grid20$pre_trend_sov <- timeRangeTrend(kfw_grid20,"sov[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
-# kfw_grid20$pre_trend_soy <- timeRangeTrend(kfw_grid20,"soy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
-# kfw_grid20$pre_trend_suv <- timeRangeTrend(kfw_grid20,"suv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
-# kfw_grid20$pre_trend_suy <- timeRangeTrend(kfw_grid20,"suy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
-# kfw_grid20$pre_trend_wv <- timeRangeTrend(kfw_grid20,"wv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pt_temp_mean <- timeRangeTrend(kfw_grid20,"MeanT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pt_temp_max <- timeRangeTrend(kfw_grid20,"MaxT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pt_temp_min <- timeRangeTrend(kfw_grid20,"MinT_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+
+kfw_grid20$pt_precip_mean <- timeRangeTrend(kfw_grid20,"MeanP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pt_precip_max <- timeRangeTrend(kfw_grid20,"MaxP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+kfw_grid20$pt_min <- timeRangeTrend(kfw_grid20,"MinP_[0-9][0-9][0-9][0-9]",1982,1995,"GridID")
+
+kfw_grid20$pt_ntl <- timeRangeTrend(kfw_grid20,"ntl_[0-9][0-9][0-9][0-9]",1992,1995,"GridID")
+
+kfw_grid20$pt_cv <- timeRangeTrend(kfw_grid20,"cv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pt_cy <- timeRangeTrend(kfw_grid20,"cy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pt_rv <- timeRangeTrend(kfw_grid20,"rv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pt_ry <- timeRangeTrend(kfw_grid20,"ry[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pt_sov <- timeRangeTrend(kfw_grid20,"sov[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pt_soy <- timeRangeTrend(kfw_grid20,"soy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pt_suv <- timeRangeTrend(kfw_grid20,"suv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
+kfw_grid20$pt_suy <- timeRangeTrend(kfw_grid20,"suy[0-9][0-9][0-9][0-9]",1991,1995,"GridID")
+kfw_grid20$pt_wv <- timeRangeTrend(kfw_grid20,"wv[0-9][0-9][0-9][0-9]",1994,1995,"GridID")
 
 
 ## Write Final Shapefile, with pre-trends
-writePolyShape(kfw_grid20,"OhFive_gridanalysis_inputs_ALL151.shp")
+writePolyShape(kfw_grid20,"OhFive_gridanalysis_inputs_pretrends_ALL151.shp")
 
-kfw_grid20 = readShapePoly("OhFive_gridanalysis_inputs_ALL151.shp")
+#kfw_grid20 = readShapePoly("OhFive_gridanalysis_inputs_ALL151.shp")
 
 #-------------------------
 ##Convert to panel dataset
@@ -322,7 +328,8 @@ psm_Long <- reshape(kfw_grid_reshape5@data, varying=all_reshape, direction="long
 psm_Long$yrtodem <- NA
 psm_Long$yrtodem=psm_Long$Year - psm_Long$demend_y
 
-#Create new Treatment variable that's correct, using demend_y
+#Create demarcation treatment variable, using demend_y
+#0 in years prior to demarcation, turns to 1 in year of demarcation
 psmtest3 <- psm_Long
 psmtest3$trtdem <- 0
 psmtest3$trtdem[which(psmtest3$Year<psmtest3$demend_y)]<-0
@@ -351,6 +358,17 @@ psm_Long <- psmtest5
 
 write.csv(psm_Long,file="psm_Long_ALL151.csv")
 
+##Scratch
+
+sub29<-kfw_grid_reshape5[kfw_grid_reshape5@data$GridID==225929,]
+View(sub29@data)
+View(sub29@data[,(100:200)])
+View(sub29@data[,(200:296)])
+
+#----
+#Old code to build panel data using SCI
+##****WRONG!!****** 
+
 # varList=c("MaxL_")
 # psm_Long <- BuildTimeSeries(dta=kfw_grid20,idField="GridID",varList_pre=varList,1982,2010,colYears=c("demend_y","apprend_y","regend_y"),
 #                             interpYears=c("Slope","Road_dist","Riv_Dist","UF","Elevation","terrai_are","Pop_","MeanT_","MeanP_","MaxT_",
@@ -362,11 +380,3 @@ write.csv(psm_Long,file="psm_Long_ALL151.csv")
 # 
 # 
 # psm_Long$Year <- as.numeric(psm_Long$Year)
-
-##Scratch
-
-sub29<-kfw_grid_reshape5[kfw_grid_reshape5@data$GridID==225929,]
-View(sub29@data)
-View(sub29@data[,(100:200)])
-View(sub29@data[,(200:296)])
-
