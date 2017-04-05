@@ -354,9 +354,9 @@ psm_Long$Post2008[psm_Long$Year>2008]<-1
 ## Run Models
 
 pModelMax_A <- "MaxL ~ trtdem + factor(reu_id)"
-pModelMax_B <- "MaxL ~ trtdem +  MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(reu_id) "
+pModelMax_B <- "MaxL ~ trtdem + Pop+ MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(reu_id) "
 #Pop_ was dropped
-pModelMax_C <- "MaxL ~ trtdem + MeanT + MeanP +MaxT + MaxP + MinT + MinP + Year + factor(reu_id)"
+pModelMax_C <- "MaxL ~ trtdem + Pop +MeanT + MeanP +MaxT + MaxP + MinT + MinP + Year + factor(reu_id)"
 #Pop_ was dropped
 pModelMax_C_reuid <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
 pModelMax_C_reuidenf <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
@@ -367,8 +367,8 @@ pModelMax_C_reuidenf_fe <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +Max
 pModelMax_C2004 <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtdem + factor(reu_id)"
 pModelMax_C1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtenf + factor(reu_id)"
 
-pModelMax_D <- "MaxL ~ trtdem  +MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
-pModelMax_D1 <- "MaxL ~ trtdem + trtenf +MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
+pModelMax_D <- "MaxL ~ trtdem  + Pop + MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
+pModelMax_D1 <- "MaxL ~ trtdem + trtenf +Pop +MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
 pModelMax_D2004 <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtdem + factor(Year) + factor(reu_id)"
 pModelMax_D1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtenf + factor(Year) + factor(reu_id)"
 
@@ -399,15 +399,15 @@ psm_Long$predict_NDVI_max_pre_int <- psm_Long$predict_NDVI_max_pre*psm_Long$trtd
 psm_Long$pre_trend_NDVI_max_cat_int <- psm_Long$pre_trend_NDVI_max_cat*psm_Long$trtdem
 psm_Long$pre_trend_NDVI_max_int <- psm_Long$pre_trend_NDVI_max*psm_Long$trtdem
 
-pModelMax_E <- "MaxL ~ trtdem + MeanT + MeanP  + MaxT + MaxP + MinT + MinP + 
+pModelMax_E <- "MaxL ~ trtdem + Pop + MeanT + MeanP  + MaxT + MaxP + MinT + MinP + 
                 predict_NDVI_max_pre_cat + predict_NDVI_max_pre_cat_int + factor(reu_id) + factor(Year)"
 
-pModelMax_F <- "MaxL ~ trtdem +MeanT + MeanP +  MaxT + MaxP + MinT + MinP + 
+pModelMax_F <- "MaxL ~ trtdem +Pop +MeanT + MeanP +  MaxT + MaxP + MinT + MinP + 
                 predict_NDVI_max_pre + predict_NDVI_max_pre_int + factor(reu_id) + factor(Year)"
 
-pModelMax_G <- "MaxL ~ trtdem  + MeanT + MeanP + MaxT + MaxP + MinT + MinP + 
+pModelMax_G <- "MaxL ~ trtdem  + Pop +MeanT + MeanP + MaxT + MaxP + MinT + MinP + 
                 pre_trend_NDVI_max_cat + pre_trend_NDVI_max_cat_int + factor(reu_id) + factor(Year)"
-pModelMax_H <- "MaxL ~ trtdem +MeanT + MeanP + MaxT + MaxP + MinT + MinP + 
+pModelMax_H <- "MaxL ~ trtdem +Pop +MeanT + MeanP + MaxT + MaxP + MinT + MinP + 
                 pre_trend_NDVI_max + pre_trend_NDVI_max_int + factor(reu_id) + factor(Year)"
 
 pModelMax_E_fit <- Stage2PSM(pModelMax_E,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
