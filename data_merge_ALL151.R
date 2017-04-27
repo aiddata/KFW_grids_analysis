@@ -8,6 +8,7 @@ library(maptools)
 library(reshape)
 library(splitstackshape)
 library(ggplot2)
+library(plyr)
 
 library(devtools)
 devtools::install_github("itpir/SCI@master")
@@ -23,7 +24,49 @@ kfw_grid = readShapePoly("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Gr
 #Drop Unused Variables at community level 
 #(Pop, slope, elevation, urban travel time, distance to river/road, NDVI, temp and precip because we're using at cell level)
 #keep treatment info and community identifiers
-kfw_grid@data <- kfw_grid@data[,-(5:744),drop=FALSE]
+kfw_grid@data <- kfw_grid@data[,-(4:744),drop=FALSE]
+
+#----
+#correct information to include 2 PPTAL indigenous lands that were wrongly excluded from the grid level extract
+#reu_id=90 and reu_id=123
+# if want to produce original shapefile that miscorrectly attributed the cells and communities, run code without this section
+#load in shapefile at community level from KFW_Amazon git repo
+kfw_comm=readShapePoly("/Users/rbtrichler/Documents/AidData/Git Repos/KFW_Amazon/processed_data/kfw_analysis_inputs.shp")
+#drop out unused variables at community level
+kfw_comm<-kfw_comm[,-(3:277),drop=FALSE]
+kfw_comm<-kfw_comm[,-(36:99),drop=FALSE]
+# exclude everything but reu_id=90 & reu_id=123
+comm<-c(90, 123)
+kfw_comm1<-kfw_comm[kfw_comm@data$reu_id %in% comm,]
+#create new dataframe with appropriate GridIDs and merge with comm level info
+GridID<-c(393244,392458,443485,442699)
+reu_id<-c(90,90,123,123)
+df=data.frame(GridID, reu_id)
+kfw_comm2<-join(kfw_comm1@data,df,by='reu_id',type='left',match='all')
+#subset grids shapefile to 4 grid cells of interest, drop incorrect vars, merge correct vars
+kfw_grid_add<-kfw_grid[(kfw_grid$GridID %in% GridID),]
+kfw_grid_add<-kfw_grid_add[,-(3:36),drop=FALSE]
+kfw_grid_add$reu_id<-NA
+kfw_grid_add$reu_id[kfw_grid_add$GridID==393244]<-90
+kfw_grid_add$reu_id[kfw_grid_add$GridID==392458]<-90
+kfw_grid_add$reu_id[kfw_grid_add$GridID==443485]<-123
+kfw_grid_add$reu_id[kfw_grid_add$GridID==442699]<-123
+kfw_grid_add1<-merge(kfw_grid_add,kfw_comm2,by="GridID")
+#drop and rename vars from merge
+kfw_grid_add2<-kfw_grid_add1[,-grep("(Id)",names(kfw_grid_add1))]
+kfw_grid_add3<-kfw_grid_add2[,-grep("(reu_id.x)",names(kfw_grid_add2))]
+kfw_grid_add3<-rename(kfw_grid_add3,c(id="Id"))
+kfw_grid_add3<-rename(kfw_grid_add3,c(reu_id.y="reu_id"))
+#add information to kfw_grid, dropping out old GridID rows and adding in correct rows from kfw_comm
+kfw_grid_x<-kfw_grid[!(kfw_grid$GridID %in% GridID),]
+kfw_grid_add3<-kfw_grid_add3[,order(names(kfw_grid_add3))]
+kfw_grid_x<-kfw_grid_x[,order(names(kfw_grid_x))]
+kfw_grid_add3 <- spChFIDs(kfw_grid_add3, paste("b", row.names(kfw_grid_add3), sep="."))
+
+kfw_grid_new=rbind(kfw_grid_x,kfw_grid_add3)
+
+kfw_grid<-kfw_grid_new
+#-----
 
 #Drop non-PPTAL communities (but leave in those that were never demarcated)
 kfw_grid$NA_check <- 0
@@ -32,7 +75,7 @@ kfw_grid0 <- kfw_grid[kfw_grid$NA_check != 1,]
 
 #Merge grid-level covariate files
 #elevation
-#since dropped out non-PPTAL communities, there will be many records that can't be matched in merge (81366 records)
+#since dropped out non-PPTAL communities, there will be many records that can't be matched in merge (81363 records)
 kfw_grid_elevation <- read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/Grid Data Extracts/KFW_Grids/extracted_data/elevation/extract.csv")
 names(kfw_grid_elevation)[2] = "Elevation"
 kfw_grid1= merge(kfw_grid0, kfw_grid_elevation, by.x="GridID", by.y="Id")
@@ -299,4 +342,6 @@ writePolyShape(kfw_grid20,"/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/G
 
 #kfw_grid20 = readShapePoly("OhFive_gridanalysis_inputs_pretrends_ALL151.shp")
 
+##Scratch
 
+test<-kfw_grid[kfw_grid@data$GridID==392458,]
