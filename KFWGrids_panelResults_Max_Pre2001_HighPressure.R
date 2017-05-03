@@ -344,6 +344,10 @@ table(psmtest5$trtenf)
 
 psm_Long <- psmtest5
 
+
+psm_Long<-read.csv("/Users/rbtrichler/Documents/AidData/KFW Brazil Eval/GridDataProcessed/psm_Long_151_highpressure.csv")
+
+
 #Create post-2004 and post-2008 dummy
 psm_Long$Post2004 <- 0
 psm_Long$Post2004[psm_Long$Year > 2004] <- 1
@@ -355,34 +359,21 @@ psm_Long$Post2008[psm_Long$Year>2008]<-1
 
 pModelMax_A <- "MaxL ~ trtdem + factor(reu_id)"
 pModelMax_B <- "MaxL ~ trtdem + Pop+ MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(reu_id) "
-#Pop_ was dropped
 pModelMax_C <- "MaxL ~ trtdem + Pop +MeanT + MeanP +MaxT + MaxP + MinT + MinP + Year + factor(reu_id)"
-#Pop_ was dropped
-pModelMax_C_reuid <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
-pModelMax_C_reuidenf <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
-pModelMax_C_reuid_fe <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(Year) + factor(reu_id)"
-pModelMax_C_reuidenf_fe <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(Year) + factor(reu_id)"
 
-
-pModelMax_C2004 <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtdem + factor(reu_id)"
-pModelMax_C1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year + Post2004*trtenf + factor(reu_id)"
+pModelMax_C2004 <- "MaxL ~ trtdem + Pop + MeanT + MeanP +MaxT + MaxP + MinT + MinP + Year + Post2004*trtdem + factor(reu_id)"
+pModelMax_C1_2004 <- "MaxL ~ trtdem + trtenf + Pop + MeanT + MeanP +MaxT + MaxP + MinT + MinP + Year + Post2004*trtenf + factor(reu_id)"
 
 pModelMax_D <- "MaxL ~ trtdem  + Pop + MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
 pModelMax_D1 <- "MaxL ~ trtdem + trtenf +Pop +MeanT + MeanP +MaxT + MaxP + MinT + MinP + factor(Year) + factor(reu_id)"
-pModelMax_D2004 <- "MaxL_ ~ trtdem + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtdem + factor(Year) + factor(reu_id)"
-pModelMax_D1_2004 <- "MaxL_ ~ trtdem + trtenf + Pop_ +MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Post2004*trtenf + factor(Year) + factor(reu_id)"
+pModelMax_D2004 <- "MaxL ~ trtdem + Pop +MeanT + MeanP +MaxT + MaxP + MinT + MinP + Post2004*trtdem + factor(Year) + factor(reu_id)"
+pModelMax_D1_2004 <- "MaxL ~ trtdem + trtenf + Pop +MeanT + MeanP +MaxT + MaxP + MinT + MinP + Post2004*trtenf + factor(Year) + factor(reu_id)"
 
 
 pModelMax_A_fit <- Stage2PSM(pModelMax_A ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_B_fit <- Stage2PSM(pModelMax_B ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 pModelMax_C_fit <- Stage2PSM(pModelMax_C ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-
-pModelMax_C_reuid_fit <- Stage2PSM(pModelMax_C_reuid ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_C_reuidenf_fit <- Stage2PSM(pModelMax_C_reuidenf ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_C_reuid_fe_fit <- Stage2PSM(pModelMax_C_reuid_fe ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-pModelMax_C_reuidenf_fe_fit <- Stage2PSM(pModelMax_C_reuidenf_fe ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
-
 
 pModelMax_C2004_fit <- Stage2PSM(pModelMax_C2004 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C1_2004_fit <- Stage2PSM(pModelMax_C1_2004 ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
@@ -419,16 +410,7 @@ pModelMax_H_fit <- Stage2PSM(pModelMax_H ,psm_Long,type="cmreg", table_out=TRUE,
 
 ## Stargazer Output
 
-stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
-          type="html",align=TRUE,
-          keep=c("TrtMnt","Pop_", "MeanT_","MeanP_","MaxT_","MaxP_","MinT_","MinP_"),
-          covariate.labels=c("Treatment_Demarcation", "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip","Min Temp","Min Precip"),
-          omit.stat=c("f","ser"),
-          keep.stat=c("n"),
-          title="Regression Results",
-          dep.var.labels=c("Max NDVI")
-)
-
+#Used for JEEM resubmission
 stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
           pModelMax_D1_fit $cmreg,
           pModelMax_E_fit $cmreg,pModelMax_F_fit $cmreg,pModelMax_G_fit$cmreg, pModelMax_H_fit$cmreg,
@@ -450,7 +432,7 @@ stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,p
           title="Regression Results",
           dep.var.labels=c("Max NDVI")
 )
-
+#Used for JEEM resubmission
 stargazer(pModelMax_C2004_fit $cmreg,pModelMax_D2004_fit $cmreg,pModelMax_C1_2004_fit $cmreg,
           pModelMax_D1_2004_fit $cmreg,
           type="html",align=TRUE,
@@ -468,30 +450,15 @@ stargazer(pModelMax_C2004_fit $cmreg,pModelMax_D2004_fit $cmreg,pModelMax_C1_200
           dep.var.labels=c("Max NDVI")
 )
 
-stargazer(pModelMax_C_reuid_fit $cmreg,pModelMax_C_reuidenf_fit $cmreg,
-          pModelMax_C_reuid_fe_fit $cmreg, pModelMax_C_reuidenf_fe_fit $cmreg,
-          type="html",align=TRUE,
-          keep=c("trt","Pop", "MeanT","MeanP","MaxT","MaxP","MinT","MinP","Year","reu_id"),
-          covariate.labels=c("Treatment (Demarcation)","Treatment (Demarcation + Enforcement Support)", 
-                              "Population", "Mean Temp","Mean Precip","Max Temp","Max Precip",
-                              "Min Temp","Min Precip", "Year"),
-          order=c("trt","Pop","MeanT","MeanP","MaxT","MaxP","MinT","MinP","NDVI","Year"),
-          keep.stat=c("n"),
-          add.lines=list(c("Observations","246,007","246,007","246,007","246,007"),
-                         c("Community Fixed Effects?","Yes","Yes","Yes","Yes"),
-                         c("Year Fixed Effects?","No","No","Yes","Yes")),
-          title="Regression Results",
-          dep.var.labels=c("Max NDVI")
-)
 
 ##STATS TABLE
 stargazer(psm_Long, type="html",
           keep=c("MaxL","Slope","Road","Riv","Elevation","terrai_are","Pop","Mean","Min","MaxT",
           "MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre"),
-          covariate.labels=c("NDVI","Slope (degree)","Distance to Road (m)","Distance to River (m)","Elevation (m)",
-                             "Area (hectares)","Population Density","Mean Temperature","Mean Precipitation",
-                             "Min Temperature","Min Precipitation","Max Temperature","Max Precipitation",
-                             "NDVI Pre Trend","Predicted NDVI Pre Trend"),
+          # covariate.labels=c("NDVI","Slope (degree)","Distance to Road (m)","Distance to River (m)","Elevation (m)",
+          #                    "Area (hectares)","Population Density","Mean Temperature","Mean Precipitation",
+          #                    "Min Temperature","Min Precipitation","Max Temperature","Max Precipitation",
+          #                    "NDVI Pre Trend","Predicted NDVI Pre Trend"),
           omit.summary.stat=c("n"))
 
 
@@ -523,6 +490,8 @@ summary(psm_Long$commwt)
 library(SDMTools)
 wt.mean(psm_Long$terrai_are,psm_Long$commwt)
 wt.sd(psm_Long$terrai,psm_Long$commwt)
+
+test<-psm_Long[!is.na(psm_Long$demend_y),]
 
 ##creating correlation coefficients with outcome/control vars and year of demarcation for summary stats table
 #produced for JEEM second revision
@@ -561,3 +530,18 @@ bubba_large<-merge(bubba,bub,by.x=bubba$row.names....names.tbl.,by.y=bub$row.nam
 sapply(psmenf, function(x) cor(psmenf$demend_y,psmenf$terrai_are))
 dtf <- sapply(psmenf, each(min, max, mean, sd, var, median, IQR))
 dtf
+
+#------
+#Archived
+#------
+
+pModelMax_C_reuid <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
+pModelMax_C_reuidenf <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(reu_id)"
+pModelMax_C_reuid_fe <- "MaxL_ ~ trtdem + Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(Year) + factor(reu_id)"
+pModelMax_C_reuidenf_fe <- "MaxL_ ~ trtdem + trtenf+ Pop_ + MeanT_ + MeanP_ +MaxT_ + MaxP_ + MinT_ + MinP_ + Year*factor(reu_id) + factor(Year) + factor(reu_id)"
+
+pModelMax_C_reuid_fit <- Stage2PSM(pModelMax_C_reuid ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_C_reuidenf_fit <- Stage2PSM(pModelMax_C_reuidenf ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_C_reuid_fe_fit <- Stage2PSM(pModelMax_C_reuid_fe ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+pModelMax_C_reuidenf_fe_fit <- Stage2PSM(pModelMax_C_reuidenf_fe ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
+
