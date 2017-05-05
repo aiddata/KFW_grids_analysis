@@ -162,14 +162,61 @@ summary(psm_Long$commwt)
 
 library(SDMTools)
 wt.mean(psm_Long$terrai_are,psm_Long$commwt)
-wt.sd(psm_Long$terrai,psm_Long$commwt)
+wt.sd(psm_Long$terrai_are,psm_Long$commwt)
+summary(psm_Long$terrai_are)
 
 test<-psm_Long[!is.na(psm_Long$demend_y),]
 
+
+#for loop for summary stats
+
+#subset
+stat_vars<-c("Id","demend_y","Year","MaxL","Slope","Riv_Dist","Road_dist","Elevation","terrai_are","Pop",
+             "MeanT","MeanP","MinT","MinP","MaxT","MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre","commwt")
+stats<-psm_Long[,(names(psm_Long) %in% stat_vars)]
+stats<-stats[,order(names(stats))]
+names(stats)
+
+statstest<-stats[stats$Id==155,]
+
+#get summary stats and corr coefficient
+
+result <- zeros
+
+for(i in stats)
+{
+  print(wt.mean((i),stats$commwt))
+}
+
+for(i in stats)
+{
+  print(wt.sd((i),stats$commwt))
+}
+
+for(i in stats)
+{
+  print(summary(i))
+}
+
+for(i in stats)
+{
+  print(summary(i))
+}
+
+#the below didn't work, don't know how to save results output
+n<-length(statstest)
+v2<-rep(NA,n)
+for (i in statstest)
+{
+  v2<-wt.mean((i),statstest$commwt)
+}
+
 ##creating correlation coefficients with outcome/control vars and year of demarcation for summary stats table
 #produced for JEEM second revision
+#need to subset to only communities that were demarcated
 
-cor(psm_Long$Slope,psm_Long$demend_y)
+dem<-psm_Long[!is.na(psm_Long$demend_y),]
+cor(dem$Slope,dem$demend_y)
 
 ##learning how to output tables
 test<-function(mean) {
