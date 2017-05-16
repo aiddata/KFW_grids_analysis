@@ -218,6 +218,11 @@ for (i in statstest)
 dem<-psm_Long[!is.na(psm_Long$demend_y),]
 cor(dem$Slope,dem$demend_y)
 
+#actually need to produce weighted correlation coefficients for JEEM second revision
+wtd.cors(dem$Slope,dem$demend_y)
+wtd.cors(dem$Slope, dem$demend_y,dem$commwt)
+
+
 ##learning how to output tables
 test<-function(mean) {
   tabl<-mean(psm_Long$terrai_are)
