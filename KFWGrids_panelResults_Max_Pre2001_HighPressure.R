@@ -11,6 +11,7 @@ library(SCI)
 library(stargazer)
 library(lmtest)
 library(multiwayvcov)
+library(SDMTools)
 loadLibs()
 #-------------------------------------------------
 #-------------------------------------------------
@@ -81,7 +82,9 @@ pModelMax_G_fit <- Stage2PSM(pModelMax_G,psm_Long,type="cmreg", table_out=TRUE, 
 pModelMax_H_fit <- Stage2PSM(pModelMax_H ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
 
+## -------
 ## Stargazer Output
+## -------
 
 #Used for JEEM resubmission
 stargazer(pModelMax_A_fit $cmreg,pModelMax_B_fit $cmreg,pModelMax_C_fit $cmreg,pModelMax_D_fit $cmreg,
@@ -124,7 +127,12 @@ stargazer(pModelMax_C2004_fit $cmreg,pModelMax_D2004_fit $cmreg,pModelMax_C1_200
 )
 
 
-##STATS TABLE
+## -------
+#STATS TABLE, weighted
+#---------
+# for JEEM 2nd submission, used code to output summary stats table
+# but then had to manually add (to html or in Excel where formatted) the weighted mean and sd (and correlation coefficient)
+# for below, only the var names and min/max values are correct if want to weight by community size
 stargazer(psm_Long, type="html",
           keep=c("MaxL","Slope","Road","Riv","Elevation","terrai_are","Pop","Mean","Min","MaxT",
           "MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre"),
@@ -134,12 +142,34 @@ stargazer(psm_Long, type="html",
           #                    "NDVI Pre Trend","Predicted NDVI Pre Trend"),
           omit.summary.stat=c("n"))
 
+## Manually produce weighted mean and sd 
+# weight by size of community for summary stats
+#create weight
+psm_Long$commwt <- 1/psm_Long$terrai_are
+summary(psm_Long$commwt)
+
+#manually change the var as needed
+wt.mean(psm_Long$terrai_are,psm_Long$commwt)
+wt.sd(psm_Long$terrai_are,psm_Long$commwt)
+summary(psm_Long$terrai_are)
+
+## Manually create correlation coefficients with outcome/control vars and year of demarcation 
+#produced for JEEM second revision summary stats table
+#need to subset to only communities that were demarcated
+
+dem<-psm_Long[!is.na(psm_Long$demend_y),]
+cor(dem$Slope,dem$demend_y)
+
+# !actually need to produce weighted correlation coefficients for JEEM second revision
+# manually change var as needed in excel formatting file
+wtd.cors(dem$Slope,dem$demend_y)
+wtd.cors(dem$Slope, dem$demend_y,dem$commwt)
 
 #---------------------
 #Workspace
 #---------------------
 
-## trying to implement lag function
+## -- trying to implement lag function
 
 psm_Long_lag <- TimeSeriesLag(psm_Long,"Year","GridID",1,"MaxL_","MaxL_lag",1983,2010)
 psm_Long_lag_test <- psm_Long_lag[psm_Long_lag["GridID"]==319588,]
@@ -155,20 +185,17 @@ pModelMax_I_fit <- Stage2PSM(pModelMax_I,psm_Long_lag,type="cmreg", table_out=TR
 pModelMax_J_fit <- Stage2PSM(pModelMax_J,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_K_fit <- Stage2PSM(pModelMax_K,psm_Long_lag,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
-## trying to weight by size of community for summary stats
+## -- weights with gridid
 
-psm_Long$commwt <- 1/psm_Long$terrai_are
-summary(psm_Long$commwt)
+try<-psm_Long
+test<-table(psm_Long$reu_id)
 
-library(SDMTools)
-wt.mean(psm_Long$terrai_are,psm_Long$commwt)
-wt.sd(psm_Long$terrai_are,psm_Long$commwt)
-summary(psm_Long$terrai_are)
-
-test<-psm_Long[!is.na(psm_Long$demend_y),]
+test<-as.data.frame(table(psm_Long$reu_id))
+try<-merge(try,test,by.x="reu_id",by.y="Var1")
+try$gridwt<-1/try$Freq
 
 
-#for loop for summary stats
+## -- for loop for summary stats (didn't get it to work)
 
 #subset
 stat_vars<-c("Id","demend_y","Year","MaxL","Slope","Riv_Dist","Road_dist","Elevation","terrai_are","Pop",
@@ -211,19 +238,8 @@ for (i in statstest)
   v2<-wt.mean((i),statstest$commwt)
 }
 
-##creating correlation coefficients with outcome/control vars and year of demarcation for summary stats table
-#produced for JEEM second revision
-#need to subset to only communities that were demarcated
 
-dem<-psm_Long[!is.na(psm_Long$demend_y),]
-cor(dem$Slope,dem$demend_y)
-
-#actually need to produce weighted correlation coefficients for JEEM second revision
-wtd.cors(dem$Slope,dem$demend_y)
-wtd.cors(dem$Slope, dem$demend_y,dem$commwt)
-
-
-##learning how to output tables
+## -- learning how to output tables
 test<-function(mean) {
   tabl<-mean(psm_Long$terrai_are)
   return(tabl)
