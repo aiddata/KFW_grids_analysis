@@ -286,3 +286,39 @@ pModelMax_C_reuidenf_fit <- Stage2PSM(pModelMax_C_reuidenf ,psm_Long,type="cmreg
 pModelMax_C_reuid_fe_fit <- Stage2PSM(pModelMax_C_reuid_fe ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 pModelMax_C_reuidenf_fe_fit <- Stage2PSM(pModelMax_C_reuidenf_fe ,psm_Long,type="cmreg", table_out=TRUE, opts=c("reu_id","Year"))
 
+
+#####Making weighted summary statistics more automatically####
+#
+##make a subset of the whole dataframe with only the variables that we want to end up in the table
+#psm_Long_sub <- psm_Long[, c("MaxL","Slope","Road_dist","Riv_Dist","Elevation","terrai_are","Pop","MeanT","MinT","MaxT",
+#                             "MinP","MeanP","MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre")]
+#
+##make the weights, put them in the original dataframe
+#psm_Long$commwt <- 1/psm_Long$terrai_are
+#summary(psm_Long$commwt)
+#
+##make a new subset of the original dataframe for making the correlations,
+##in this case it must be subset to only demarcated communities
+#dem <- psm_Long[!is.na(psm_Long$demend_y),]
+##again, subset to the variables that we want to end up in the table, PLUS the variable that we are finding correlations with (in this case demend_y)
+#dem <- dem[, c("MaxL","Slope","Road_dist","Riv_Dist","Elevation","terrai_are","Pop","MeanT","MinT","MaxT",
+#                "MinP","MeanP","MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre", "demend_y")]
+#
+##must make weights again and put them in this dataframe
+#dem$commwt <- 1/dem$terrai_are
+#
+##create the dataframe which will be displayed in stargazer, starting with the column of variable names
+#summ_df <- data.frame(Statistic = c("MaxL","Slope","Road_dist","Riv_Dist","Elevation","terrai_are","Pop","MeanT","MinT","MaxT",
+#                                    "MinP","MeanP","MaxP","pre_trend_NDVI_max","predict_NDVI_max_pre"))
+#
+##using lapply, calculate weighted variables
+#summ_df$Mean <- lapply(psm_Long_sub[,], wt.mean, wt=psm_Long$commwt)
+#summ_df$St.Dev. <- lapply(psm_Long_sub[,], wt.sd, wt=psm_Long$commwt)
+#summ_df$Min <- lapply(psm_Long_sub[,], min)
+#summ_df$Max <- lapply(psm_Long_sub[,], max)
+#
+##using lapply, calculate weighted correlations, then drop the variables outside of 1:15 (demend_y and commwt) which we don't want in the stargazer table
+#summ_df$Corr <- as.list(lapply(dem[,], wtd.cors, y=dem$demend_y, weight=dem$commwt))[1:15]
+#
+##finally, make the stargazer table, with summary statistics omitted so that the dataframe itself is displayed
+#stargazer(summ_df, type = "html", summary = FALSE, rownames = FALSE)
